@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication 
+	xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/halo"
+	width="800" height="800"
+	creationComplete="windowedapplication1_creationCompleteHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			import mx.collections.ArrayCollection;
+			import mx.core.IUIComponent;
+			import mx.core.DragSource;
+			import mx.managers.DragManager;
+			import mx.events.MenuEvent;
+			import mx.controls.FileSystemTree;
+			import flashx.textLayout.formats.Direction;
+			import flash.filesystem.File;
+			
+			[Bindable]
+			private var pdmlContextAsList:ArrayCollection;
+			
+			[Bindable]
+			private var rootFolder:File;
+
+			
+			private function getAsPdmlNodeView(item:Object):IFactory
+			{
+				return new ClassFactory(DefaultPdmlNodeView);
+			}			
+
+			protected function windowedapplication1_creationCompleteHandler(event:FlexEvent):void
+			{
+				this.pdmlContextAsList = new ArrayCollection();
+				for each(var node:XML in this.pdmlContent.children())
+				{
+					this.pdmlContextAsList.addItem(node);
+				}
+				this.rootFolder = new File("E:/pd-repo");
+				this.fileSystemTree.selectedPath = this.rootFolder.resolvePath("./haxe/org/dassista/_pdmls/export-as-repo.pdml").nativePath;
+				this.fileSystemTree.refresh();
+			}
+
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<fx:XMLList id="fileSystemTreeMenu">
+            <menuitem label="File">
+                <menuitem label="Create pdml (drag and drop support)" enabled="false"/>
+                <menuitem label="Create path" enabled="false"/>
+            </menuitem>
+        </fx:XMLList>
+        <fx:XMLList id="pdmlContent">
+           <pdml parser="haxe.org.dassista.tools.parsers.ActionPdml">
+			    <execute classname="haxe.org.dassista.tools.Parser">
+			        <target>haxe.org.dassista._pdmls.module</target>
+			    </execute>
+			    <clean classname="haxe.org.dassista.tools.proxy.Dir">
+			      <target>releases.org.dassista.12</target>
+			    </clean>
+			    <execute classname="haxe.org.dassista.tools.proxy.Copy">
+			      <src>haxe.org.dassista</src>
+			      <dest>releases.org.dassista.repo.haxe.org.dassista</dest>
+			      <excludeDirs>.git</excludeDirs>
+			      <excludeFiles>*.n</excludeFiles> 
+			    </execute>
+			    <execute classname="haxe.org.dassista.tools.proxy.Copy">
+			      <src></src>
+			      <dest>releases.org.dassista.repo</dest>
+			      <name>*.bat</name>
+			    </execute>
+			    <execute classname="haxe.org.dassista.tools.proxy.Zip">
+			      <src>releases.org.dassista.repo</src>
+			      <dest>releases.org.dassista</dest>
+			      <name>repo_\{version\}.zip</name>
+			    </execute>
+			    <clean classname="haxe.org.dassista.tools.proxy.Dir">
+			        <target>releases.org.dassista.repo</target>
+			    </clean>
+			</pdml>
+        </fx:XMLList>
+	</fx:Declarations>
+	
+	<mx:HDividedBox width="100%" height="100%">
+		<s:VGroup width="50%" height="100%">
+			<mx:MenuBar width="100%" dataProvider="{this.fileSystemTreeMenu}" labelField="@label" />
+			<mx:FileSystemTree id="fileSystemTree" width="100%" height="100%" directory="{this.rootFolder}"/>	
+		</s:VGroup>
+		<s:VGroup width="50%" height="100%">
+			<s:SimpleText text="{this.pdmlContent.@parser}" height="20" textAlign="center" verticalAlign="middle" width="100%" />
+			<s:List width="100%"
+				itemRendererFunction="{this.getAsPdmlNodeView}" 
+				dataProvider="{this.pdmlContextAsList}" />
+		</s:VGroup>
+	</mx:HDividedBox>
+</s:WindowedApplication>
