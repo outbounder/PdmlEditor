@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:List xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/halo"
+		itemRendererFunction="{this.createModuleRendererView}"
+		mouseDown="onMouseDown(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import components.modules.renderers.DefaultModuleRenderer;
+			
+			import flash.events.MouseEvent;
+			
+			import mx.core.DragSource;
+			import mx.core.UIComponent;
+			import mx.managers.DragManager;
+			
+			private function createModuleRendererView(item:Object):IFactory
+			{
+				return new ClassFactory(DefaultModuleRenderer);
+			}
+			
+			private function onMouseDown(event:MouseEvent):void
+			{
+				if(this.selectedIndex == -1)
+					return;
+				var dragSource:DragSource = new DragSource();
+				dragSource.addData(this.selectedItem, "module");
+				DragManager.doDrag(this.dataGroup.getElementAt(this.selectedIndex) as UIComponent, dragSource, event);
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+</s:List>

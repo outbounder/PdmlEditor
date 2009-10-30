@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:List xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/halo"
+		 itemRendererFunction="{this.getAsPdmlNodeView}"
+		 dataProvider="{this.pdmlNodesList}"
+		 dragEnter="onDragEnter(event)"
+		 dragDrop="onDragDrop(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import components.pdml.renderers.DefaultPdmlNodeRenderer;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.UIComponent;
+			import mx.events.DragEvent;
+			import mx.managers.DragManager;
+			
+			[Bindable]
+			private var pdmlNodesList:ArrayCollection;
+			
+			public var lastDropOverIndex:int = -1;
+			
+			protected function onDragEnter(event:DragEvent):void
+			{
+				if(event.dragSource.hasFormat("treeItems") || event.dragSource.hasFormat("module"))
+				{
+					DragManager.acceptDragDrop(event.currentTarget as UIComponent);
+				}
+			}
+			
+			protected function onDragDrop(event:DragEvent):void
+			{
+				if(event.dragSource.hasFormat("treeItems"))
+				{
+					var file:File = event.dragSource.dataForFormat("treeItems")[0] as File;
+					var stream:FileStream = new FileStream();
+					stream.open(file, FileMode.READ);
+					var contents:String = stream.readUTFBytes(stream.bytesAvailable);
+					var xml:XML = new XML(contents);
+					this.pdmlNodesList = new ArrayCollection();
+					for each(var node:XML in xml.children())
+						this.pdmlNodesList.addItem(node);
+				}
+				if(event.dragSource.hasFormat("module"))
+				{
+					var moduleXML:XML = XML(event.dragSource.dataForFormat("module"));
+					var newNode:XML = new XML("<execute classname='"+moduleXML..module[0].@name+"'></execute>");
+					if(this.lastDropOverIndex != -1)
+						this.dataProvider.addItemAt(newNode, this.lastDropOverIndex);
+					else
+						this.dataProvider.addItem(newNode);
+					this.lastDropOverIndex = -1;
+				}
+			}
+			
+			private function getAsPdmlNodeView(item:Object):IFactory
+			{
+				return new ClassFactory(DefaultPdmlNodeRenderer);
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+</s:List>

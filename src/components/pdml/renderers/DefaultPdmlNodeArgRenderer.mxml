@@ -47,7 +47,7 @@
 		</s:fill>
 	</s:Rect>
 	
-	<s:SimpleText text="&lt;{this.argsAsXML.name()}&gt;{this.argsAsXML.text()}&lt;/{this.argsAsXML.name()}&gt;" 
+	<s:RichText text="&lt;{this.argsAsXML.name()}&gt;{this.argsAsXML.text()}&lt;/{this.argsAsXML.name()}&gt;" 
 		width="100%" color.selected="gray" height="15"/>
 	
 	

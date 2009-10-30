@@ -3,45 +3,76 @@
 	xmlns:fx="http://ns.adobe.com/mxml/2009" 
 	xmlns:s="library://ns.adobe.com/flex/spark" 
 	xmlns:mx="library://ns.adobe.com/flex/halo"
-	width="800" height="800"
-	creationComplete="windowedapplication1_creationCompleteHandler(event)">
+	xmlns:pdml="components.pdml.*" 
+	xmlns:modules="components.modules.*"
+	width="800" height="600"
+	currentState="loading"
+	preinitialize="onPreinitialize()"
+	creationComplete="onCreationComplete()" >
 	
 	<fx:Script>
 		<![CDATA[
-			import mx.events.FlexEvent;
+			import flash.Boot;
+			import flash.display.MovieClip;
+			import flash.events.DataEvent;
+			
+			import haxe.org.dassista.api.rest.as3.IRestServiceContext;
+			import haxe.org.dassista.api.rest.as3.RestService;
+			
 			import mx.collections.ArrayCollection;
-			import mx.core.IUIComponent;
-			import mx.core.DragSource;
-			import mx.managers.DragManager;
-			import mx.events.MenuEvent;
 			import mx.controls.FileSystemTree;
-			import flashx.textLayout.formats.Direction;
-			import flash.filesystem.File;
+			import mx.events.FlexEvent;
 			
 			[Bindable]
-			private var pdmlContextAsList:ArrayCollection;
+			private var modulesList:ArrayCollection;
 			
 			[Bindable]
 			private var rootFolder:File;
-
 			
-			private function getAsPdmlNodeView(item:Object):IFactory
+			[Bindable]
+			private var restService:RestService;
+			
+			private function onPreinitialize():void
 			{
-				return new ClassFactory(DefaultPdmlNodeView);
-			}			
-
-			protected function windowedapplication1_creationCompleteHandler(event:FlexEvent):void
-			{
-				this.pdmlContextAsList = new ArrayCollection();
-				for each(var node:XML in this.pdmlContent.children())
-				{
-					this.pdmlContextAsList.addItem(node);
-				}
-				this.rootFolder = new File("E:/pd-repo");
-				this.fileSystemTree.selectedPath = this.rootFolder.resolvePath("./haxe/org/dassista/_pdmls/export-as-repo.pdml").nativePath;
-				this.fileSystemTree.refresh();
+				var boot:Boot = new Boot(this.stage as MovieClip); // haxe boot
 			}
 
+			private function onCreationComplete():void
+			{
+				// init the rest service
+				this.restService = new RestService("http://localhost:2000");
+				
+				// prepare repoInfoContext
+				var repoInfoContext:IRestServiceContext = this.restService.clone();
+				repoInfoContext.setValue("module", "haxe.org.dassista.tools.RepoInfo");
+				repoInfoContext.setValue("method", "getRootFolderRealPath");
+				
+				// load module result
+				this.restService.loadModuleResult(repoInfoContext, onGetRootFolderRealPathResult);
+			}
+			
+			private function onGetRootFolderRealPathResult(e:DataEvent):void
+			{
+				this.rootFolder = new File(XML(e.data).text());
+				
+				// module info
+				var moduleInfoContext:IRestServiceContext = this.restService.clone();
+				moduleInfoContext.setValue("module", "haxe.org.dassista.tools.ModuleInfo");
+				moduleInfoContext.setValue("target", "haxe.org.dassista.tools");
+				
+				this.restService.loadModuleResult(moduleInfoContext, onModuleInfoResult);
+			}
+			
+			private function onModuleInfoResult(e:DataEvent):void
+			{
+				this.modulesList = new ArrayCollection();
+				
+				var result:XML = XML("<result>"+e.data+"</result>");
+				for each(var node:XML in result.children())
+					this.modulesList.addItem(node);
+					
+				this.currentState = "intialized";
+			}
 		]]>
 	</fx:Script>
 
@@ -52,47 +83,27 @@
                 <menuitem label="Create path" enabled="false"/>
             </menuitem>
         </fx:XMLList>
-        <fx:XMLList id="pdmlContent">
-           <pdml parser="haxe.org.dassista.tools.parsers.ActionPdml">
-			    <execute classname="haxe.org.dassista.tools.Parser">
-			        <target>haxe.org.dassista._pdmls.module</target>
-			    </execute>
-			    <clean classname="haxe.org.dassista.tools.proxy.Dir">
-			      <target>releases.org.dassista.12</target>
-			    </clean>
-			    <execute classname="haxe.org.dassista.tools.proxy.Copy">
-			      <src>haxe.org.dassista</src>
-			      <dest>releases.org.dassista.repo.haxe.org.dassista</dest>
-			      <excludeDirs>.git</excludeDirs>
-			      <excludeFiles>*.n</excludeFiles> 
-			    </execute>
-			    <execute classname="haxe.org.dassista.tools.proxy.Copy">
-			      <src></src>
-			      <dest>releases.org.dassista.repo</dest>
-			      <name>*.bat</name>
-			    </execute>
-			    <execute classname="haxe.org.dassista.tools.proxy.Zip">
-			      <src>releases.org.dassista.repo</src>
-			      <dest>releases.org.dassista</dest>
-			      <name>repo_\{version\}.zip</name>
-			    </execute>
-			    <clean classname="haxe.org.dassista.tools.proxy.Dir">
-			        <target>releases.org.dassista.repo</target>
-			    </clean>
-			</pdml>
-        </fx:XMLList>
 	</fx:Declarations>
 	
-	<mx:HDividedBox width="100%" height="100%">
+	<s:states>
+		<s:State name="loading" />
+		<s:State name="intialized" />
+	</s:states>
+	
+	<mx:HDividedBox width="100%" height="100%" includeIn="intialized">
 		<s:VGroup width="50%" height="100%">
 			<mx:MenuBar width="100%" dataProvider="{this.fileSystemTreeMenu}" labelField="@label" />
-			<mx:FileSystemTree id="fileSystemTree" width="100%" height="100%" directory="{this.rootFolder}"/>	
+			<mx:FileSystemTree id="fileSystemTree" width="100%" height="100%" 
+				directory="{this.rootFolder}"
+				dragEnabled="true"/>
 		</s:VGroup>
-		<s:VGroup width="50%" height="100%">
-			<s:SimpleText text="{this.pdmlContent.@parser}" height="20" textAlign="center" verticalAlign="middle" width="100%" />
-			<s:List width="100%"
-				itemRendererFunction="{this.getAsPdmlNodeView}" 
-				dataProvider="{this.pdmlContextAsList}" />
-		</s:VGroup>
+		<s:Scroller width="50%" height="100%" >
+			<s:VGroup width="100%" height="100%">
+				<modules:ModulesPool width="100%" dataProvider="{this.modulesList}" />	
+				<s:RichText text="PDML PARSER CLASS PATH" height="20" textAlign="center" verticalAlign="middle" width="100%" />
+				<pdml:PdmlScriptEditor width="100%" />
+			</s:VGroup>
+		</s:Scroller>
 	</mx:HDividedBox>
+	
 </s:WindowedApplication>
