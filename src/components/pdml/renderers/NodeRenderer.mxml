@@ -21,7 +21,7 @@
 				this.nodeXML = XML(value);
 				for each(var arg:XML in this.nodeXML.children())
 				{
-					var argRenderer:NodeRenderer = new NodeRenderer();
+					var argRenderer:NodeArgRenderer = new NodeArgRenderer();
 					argRenderer.data = arg;
 					this.argsContainer.addElement(argRenderer);
 				}
