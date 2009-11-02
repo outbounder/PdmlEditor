@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/halo"
+				width="100%">
+	
+	<fx:Script>
+		<![CDATA[
+			import haxe.org.dassista.api.rest.as3.RestService;
+			
+			import mx.collections.ArrayCollection;
+			[Bindable]
+			private var methodXML:XML;
+			[Bindable]
+			private var moduleName:String;
+			[Bindable]
+			private var methodName:String;
+			[Bindable]
+			private var methodArgs:ArrayCollection;
+			
+			public override function set data(value:Object) : void
+			{
+				super.data = value;
+				this.methodXML = XML(value);
+				this.moduleName = this.methodXML.@classname;
+				this.methodName = this.methodXML.text();
+			}
+			
+			private function onSelected():void
+			{
+				if(this.methodArgs == null)
+				{
+					var service:RestService = new RestService();
+					service.setValue("module", "haxe.org.dassista.tools.ModuleInfo");
+					service.setValue("target", this.moduleName);
+					service.setValue("m", this.methodName);
+					service.load(onModuleMethodsInfo);
+				}
+			}
+			
+			private function onModuleMethodsInfo(e:DataEvent):void
+			{
+				var data:XML = XML(e.data);
+				if(data.name()=="ioerror")
+					throw Error(e.data);
+				
+				this.methodArgs = new ArrayCollection();
+				var args:XML = XML(e.data);
+				for each(var arg:XML in args..attributes[0].children())
+				{
+					if(arg.name() != "return")
+						this.methodArgs.addItem(arg);
+				}
+			}
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="normal"/>
+		<s:State name="hovered"/>
+		<s:State name="selected" enterState="onSelected()" />
+	</s:states>
+	
+	<s:Rect width="100%" height="100%" includeIn="selected,hovered">
+		<s:fill>
+			<s:SolidColor color="white" />
+		</s:fill>
+	</s:Rect>
+	
+	<s:VGroup width="100%">
+		<s:RichText text="{this.methodName}" width="100%"/>
+		<s:DataGroup dataProvider="{this.methodArgs}" width="100%" 
+				includeIn="selected" itemRenderer="{new ClassFactory(ModuleMethodArgRenderer)}">
+			<s:layout>
+				<s:VerticalLayout gap="1" />
+			</s:layout>
+		</s:DataGroup>
+	</s:VGroup>
+</s:ItemRenderer>

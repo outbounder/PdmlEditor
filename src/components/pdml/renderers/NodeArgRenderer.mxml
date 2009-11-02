@@ -8,21 +8,13 @@
 			import mx.managers.FocusManager;
 			
 			[Bindable]
-			private var argsAsList:ArrayCollection;
-			[Bindable]
-			private var argsAsXML:XML;
+			private var argXML:XML;
 			
 			public override function set data(value:Object) : void
 			{
 				super.data = value;
-				this.argsAsXML = XML(value);
-				this.argsAsList = new ArrayCollection();
-				for each(var node:XML in XML(value).children())
-				{
-					this.argsAsList.addItem(node);
-				}
+				this.argXML = XML(value);
 			}
-
 		]]>
 	</fx:Script>
 	
@@ -44,9 +36,9 @@
 	</s:Rect>
 	
 	<s:RichEditableText id="argTxt"
-		text="&lt;{this.argsAsXML.name()}&gt;{this.argsAsXML.text()}&lt;/{this.argsAsXML.name()}&gt;" 
+		text="&lt;{this.argXML.name()}&gt;{this.argXML.text()}&lt;/{this.argXML.name()}&gt;" 
 		width="100%" color.back="gray" height="15" verticalAlign="middle" 
-		focusIn="{this.showsCaret=true;}"
-		focusOut="{this.showsCaret = false}"/>
+		focusIn="{this.showsCaret = true;}"
+		focusOut="{this.showsCaret = false;}"/>
 	
 </s:ItemRenderer>

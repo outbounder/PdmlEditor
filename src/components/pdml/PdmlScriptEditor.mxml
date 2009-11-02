@@ -6,12 +6,14 @@
 		 dataProvider="{this.pdmlNodesList}"
 		 dragEnter="onDragEnter(event)"
 		 dragDrop="onDragDrop(event)"
+		 dragOver="onDragOver(event)"
 		 rendererAdd="onRendererAdd(event)"
 		 rendererRemove="onRendererRemove(event)">
 	
 	<fx:Script>
 		<![CDATA[
-			import components.pdml.renderers.DefaultPdmlNodeRenderer;
+			import components.pdml.renderers.NodeArgRenderer;
+			import components.pdml.renderers.NodeRenderer;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.IVisualElement;
@@ -19,6 +21,7 @@
 			import mx.events.DragEvent;
 			import mx.managers.DragManager;
 			
+			import spark.components.supportClasses.ItemRenderer;
 			import spark.events.RendererExistenceEvent;
 			
 			[Bindable]
@@ -30,26 +33,19 @@
 				this.overRendererOnDrag  = null;
 				if(event.dragSource.hasFormat("treeItems") || event.dragSource.hasFormat("module") || event.dragSource.hasFormat("pdmlNode"))
 				{
+					if(this.dataProvider == null)
+							this.dataProvider = new ArrayCollection();
 					DragManager.acceptDragDrop(event.currentTarget as UIComponent);
 				}
 			}
 			
+			protected function onDragOver(event:DragEvent):void
+			{
+				this.overRendererOnDrag = null;
+			}
+			
 			protected function onDragDrop(event:DragEvent):void
 			{
-				if(event.dragSource.hasFormat("pdmlNode"))
-				{
-					var index:int = this.selectedIndex;
-					var item:Object = this.selectedItem;
-					this.dataProvider.removeItemAt(index);
-					if(this.overRendererOnDrag != null)
-					{
-						this.dataProvider.addItemAt(item, this.dataGroup.getElementIndex(this.overRendererOnDrag));
-					}
-					else
-					{
-						this.dataProvider.addItem(item);
-					}
-				}
 				if(event.dragSource.hasFormat("treeItems"))
 				{
 					var file:File = event.dragSource.dataForFormat("treeItems")[0] as File;
@@ -71,11 +67,28 @@
 						this.dataProvider.addItem(newNode);
 					this.selectedIndex = -1;
 				}
+				if(event.dragSource.hasFormat("pdmlNode"))
+				{
+					var src:ItemRenderer = event.dragInitiator as ItemRenderer;
+					var dest:ItemRenderer = this.overRendererOnDrag as ItemRenderer;
+					var srcData:Object = src.data;
+					this.pdmlNodesList.removeItemAt(this.pdmlNodesList.getItemIndex(srcData));
+					if(dest != null)
+					{
+						var destData:Object = dest.data;
+						this.pdmlNodesList.addItemAt(srcData, this.pdmlNodesList.getItemIndex(destData));
+					}
+					else
+						this.pdmlNodesList.addItem(srcData);
+				}
 			}
 			
 			private function getAsPdmlNodeView(item:Object):IFactory
 			{
-				return new ClassFactory(DefaultPdmlNodeRenderer);
+				if("@classname" in item)
+					return new ClassFactory(NodeRenderer);
+				else
+					return new ClassFactory(NodeArgRenderer);
 			}
 
 			protected function onRendererAdd(event:RendererExistenceEvent):void
@@ -99,14 +112,9 @@
 			private function onRendererDragExit(e:DragEvent):void
 			{
 				(e.target as UIComponent).currentState = "normal";
-				//this.overRendererOnDrag = null;
 			}
 
 		]]>
 	</fx:Script>
-	
-	<fx:Declarations>
-		<!-- Place non-visual elements (e.g., services, value objects) here -->
-	</fx:Declarations>
 	
 </s:List>

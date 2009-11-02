@@ -21,7 +21,7 @@
 				this.nodeXML = XML(value);
 				for each(var arg:XML in this.nodeXML.children())
 				{
-					var argRenderer:DefaultPdmlNodeArgRenderer = new DefaultPdmlNodeArgRenderer();
+					var argRenderer:NodeRenderer = new NodeRenderer();
 					argRenderer.data = arg;
 					this.argsContainer.addElement(argRenderer);
 				}
@@ -29,9 +29,12 @@
 			
 			private function onMouseDown(e:MouseEvent):void
 			{
-				var dragSource:DragSource = new DragSource();
-				dragSource.addData(this.nodeXML, "pdmlNode");
-				DragManager.doDrag(this, dragSource, e);
+				if(e.target == this)
+				{
+					var dragSource:DragSource = new DragSource();
+					dragSource.addData(this.nodeXML, "pdmlNode");
+					DragManager.doDrag(this, dragSource, e);
+				}
 			}
 		]]>
 	</fx:Script>
@@ -46,18 +49,20 @@
         <s:State name="selected" />
     </s:states>
     
-	<s:Rect width="100%" height="100%" includeIn="selected,hovered">
+	<s:Rect width="100%" height="100%" includeIn="selected,hovered" >
 		<s:fill>
 			<s:SolidColor color="gray" />
 		</s:fill>
 	</s:Rect>
 	
-	<s:VGroup width="100%" >
-		<s:RichText text="&lt;{this.nodeXML.name()} classname=&quot;{this.nodeXML.@classname}&quot;&gt;" width="100%" height="15" verticalAlign="middle"/>
+	<s:VGroup width="100%" mouseEnabled="false">
+		<s:RichText text="&lt;{this.nodeXML.name()} classname=&quot;{this.nodeXML.@classname}&quot;&gt;" width="100%" height="15" verticalAlign="middle"
+					mouseEnabled="false" mouseChildren="false"/>
 		<s:Group width="100%">
 			<s:VGroup left="20" width="100%" id="argsContainer" />	
 		</s:Group>
-		<s:RichText text="&lt;/{this.nodeXML.name()}&gt;" width="100%" height="15" verticalAlign="middle"/>	
+		<s:RichText text="&lt;/{this.nodeXML.name()}&gt;" width="100%" height="15" verticalAlign="middle"
+					mouseEnabled="false" mouseChildren="false"/>	
 	</s:VGroup>
 	
 </s:ItemRenderer>

@@ -25,7 +25,7 @@
 		<link>
 			<name>[source path] src</name>
 			<type>2</type>
-			<location>E:/pd-repo/as3/libs/dassista/api/rest/src</location>
+			<locationURI>REPO/as3/libs/dassista/api/rest/src</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
