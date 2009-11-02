@@ -5,25 +5,30 @@
 		 itemRendererFunction="{this.getAsPdmlNodeView}"
 		 dataProvider="{this.pdmlNodesList}"
 		 dragEnter="onDragEnter(event)"
-		 dragDrop="onDragDrop(event)">
+		 dragDrop="onDragDrop(event)"
+		 rendererAdd="onRendererAdd(event)"
+		 rendererRemove="onRendererRemove(event)">
 	
 	<fx:Script>
 		<![CDATA[
 			import components.pdml.renderers.DefaultPdmlNodeRenderer;
 			
 			import mx.collections.ArrayCollection;
+			import mx.core.IVisualElement;
 			import mx.core.UIComponent;
 			import mx.events.DragEvent;
 			import mx.managers.DragManager;
 			
+			import spark.events.RendererExistenceEvent;
+			
 			[Bindable]
 			private var pdmlNodesList:ArrayCollection;
-			
-			public var lastDropOverIndex:int = -1;
+			private var overRendererOnDrag:IVisualElement;
 			
 			protected function onDragEnter(event:DragEvent):void
 			{
-				if(event.dragSource.hasFormat("treeItems") || event.dragSource.hasFormat("module"))
+				this.overRendererOnDrag  = null;
+				if(event.dragSource.hasFormat("treeItems") || event.dragSource.hasFormat("module") || event.dragSource.hasFormat("pdmlNode"))
 				{
 					DragManager.acceptDragDrop(event.currentTarget as UIComponent);
 				}
@@ -31,6 +36,20 @@
 			
 			protected function onDragDrop(event:DragEvent):void
 			{
+				if(event.dragSource.hasFormat("pdmlNode"))
+				{
+					var index:int = this.selectedIndex;
+					var item:Object = this.selectedItem;
+					this.dataProvider.removeItemAt(index);
+					if(this.overRendererOnDrag != null)
+					{
+						this.dataProvider.addItemAt(item, this.dataGroup.getElementIndex(this.overRendererOnDrag));
+					}
+					else
+					{
+						this.dataProvider.addItem(item);
+					}
+				}
 				if(event.dragSource.hasFormat("treeItems"))
 				{
 					var file:File = event.dragSource.dataForFormat("treeItems")[0] as File;
@@ -46,11 +65,11 @@
 				{
 					var moduleXML:XML = XML(event.dragSource.dataForFormat("module"));
 					var newNode:XML = new XML("<execute classname='"+moduleXML..module[0].@name+"'></execute>");
-					if(this.lastDropOverIndex != -1)
-						this.dataProvider.addItemAt(newNode, this.lastDropOverIndex);
+					if(this.overRendererOnDrag != null)
+						this.dataProvider.addItemAt(newNode, this.dataGroup.getElementIndex(this.overRendererOnDrag)+1);
 					else
 						this.dataProvider.addItem(newNode);
-					this.lastDropOverIndex = -1;
+					this.selectedIndex = -1;
 				}
 			}
 			
@@ -58,6 +77,31 @@
 			{
 				return new ClassFactory(DefaultPdmlNodeRenderer);
 			}
+
+			protected function onRendererAdd(event:RendererExistenceEvent):void
+			{
+				event.renderer.addEventListener(DragEvent.DRAG_OVER, onRendererDragOver);
+				event.renderer.addEventListener(DragEvent.DRAG_EXIT, onRendererDragExit);
+			}
+			
+			protected function onRendererRemove(event:RendererExistenceEvent):void
+			{
+				event.renderer.removeEventListener(DragEvent.DRAG_OVER, onRendererDragOver);
+				event.renderer.removeEventListener(DragEvent.DRAG_EXIT, onRendererDragExit);
+			}
+			
+			private function onRendererDragOver(e:DragEvent):void
+			{
+				(e.target as UIComponent).currentState = "selected";
+				this.overRendererOnDrag = e.target as IVisualElement;
+			}
+			
+			private function onRendererDragExit(e:DragEvent):void
+			{
+				(e.target as UIComponent).currentState = "normal";
+				//this.overRendererOnDrag = null;
+			}
+
 		]]>
 	</fx:Script>
 	

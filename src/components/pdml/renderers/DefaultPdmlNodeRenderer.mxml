@@ -3,23 +3,23 @@
 	xmlns:s="library://ns.adobe.com/flex/spark" 
 	xmlns:mx="library://ns.adobe.com/flex/halo"
 	width="100%"
-	dragOver="onDragOver(event)"
-	dragExit="onDragExit(event)">
+	mouseDown="onMouseDown(event)">
 
 	<fx:Script>
 		<![CDATA[
-			import components.pdml.PdmlScriptEditor;
+			import flash.events.MouseEvent;
 			
-			import mx.events.DragEvent;
+			import mx.core.DragSource;
+			import mx.managers.DragManager;
 			
 			[Bindable]
-			private var argsAsXml:XML;
+			private var nodeXML:XML;
 			
 			public override function set data(value:Object) : void
 			{
 				super.data = value;
-				this.argsAsXml = XML(value);
-				for each(var arg:XML in this.argsAsXml.children())
+				this.nodeXML = XML(value);
+				for each(var arg:XML in this.nodeXML.children())
 				{
 					var argRenderer:DefaultPdmlNodeArgRenderer = new DefaultPdmlNodeArgRenderer();
 					argRenderer.data = arg;
@@ -27,18 +27,11 @@
 				}
 			}
 			
-			protected function onDragOver(event:DragEvent):void
+			private function onMouseDown(e:MouseEvent):void
 			{
-				if(event.dragSource.hasFormat("module"))
-				{
-					this.currentState = "selected";
-					(this.owner as PdmlScriptEditor).lastDropOverIndex = (this.owner as PdmlScriptEditor).dataGroup.getElementIndex(this);
-				}
-			}
-			
-			protected function onDragExit(event:DragEvent):void
-			{
-				this.currentState = "normal";
+				var dragSource:DragSource = new DragSource();
+				dragSource.addData(this.nodeXML, "pdmlNode");
+				DragManager.doDrag(this, dragSource, e);
 			}
 		]]>
 	</fx:Script>
@@ -49,22 +42,22 @@
 	
     <s:states>
         <s:State name="normal"/>
-        <s:State name="hovered"/>
+        <s:State name="hovered" />
         <s:State name="selected" />
     </s:states>
     
-	<s:Rect width="100%" height="100%" includeIn="selected">
+	<s:Rect width="100%" height="100%" includeIn="selected,hovered">
 		<s:fill>
 			<s:SolidColor color="gray" />
 		</s:fill>
 	</s:Rect>
 	
-	<s:VGroup width="100%">
-		<s:RichText text="&lt;{this.argsAsXml.name()} classname=&quot;{this.argsAsXml.@classname}&quot;&gt;" width="100%" height="15"/>
+	<s:VGroup width="100%" >
+		<s:RichText text="&lt;{this.nodeXML.name()} classname=&quot;{this.nodeXML.@classname}&quot;&gt;" width="100%" height="15" verticalAlign="middle"/>
 		<s:Group width="100%">
 			<s:VGroup left="20" width="100%" id="argsContainer" />	
 		</s:Group>
-		<s:RichText text="&lt;/{this.argsAsXml.name()}&gt;" width="100%" height="15"/>	
+		<s:RichText text="&lt;/{this.nodeXML.name()}&gt;" width="100%" height="15" verticalAlign="middle"/>	
 	</s:VGroup>
 	
 </s:ItemRenderer>

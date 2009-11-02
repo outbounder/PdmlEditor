@@ -93,15 +93,17 @@
 	<mx:HDividedBox width="100%" height="100%" includeIn="intialized">
 		<s:VGroup width="50%" height="100%">
 			<mx:MenuBar width="100%" dataProvider="{this.fileSystemTreeMenu}" labelField="@label" />
-			<mx:FileSystemTree id="fileSystemTree" width="100%" height="100%" 
-				directory="{this.rootFolder}"
-				dragEnabled="true"/>
+			<mx:VDividedBox width="100%" height="100%">
+				<mx:FileSystemTree id="fileSystemTree" width="100%" height="100%" 
+								   directory="{this.rootFolder}"
+								   dragEnabled="true"/>
+				<modules:ModulesPool width="100%" dataProvider="{this.modulesList}" />	
+			</mx:VDividedBox>
 		</s:VGroup>
 		<s:Scroller width="50%" height="100%" >
 			<s:VGroup width="100%" height="100%">
-				<modules:ModulesPool width="100%" dataProvider="{this.modulesList}" />	
 				<s:RichText text="PDML PARSER CLASS PATH" height="20" textAlign="center" verticalAlign="middle" width="100%" />
-				<pdml:PdmlScriptEditor width="100%" />
+				<pdml:PdmlScriptEditor width="100%" height="100%"  />
 			</s:VGroup>
 		</s:Scroller>
 	</mx:HDividedBox>

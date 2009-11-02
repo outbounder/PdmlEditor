@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/halo"
-	width="100%"
-	click="itemrenderer1_clickHandler(event)">
+	width="100%">
 
 	<fx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
+			import mx.managers.FocusManager;
 			
 			[Bindable]
 			private var argsAsList:ArrayCollection;
@@ -23,11 +23,6 @@
 				}
 			}
 
-			protected function itemrenderer1_clickHandler(event:MouseEvent):void
-			{
-				this.currentState = "selected";
-			}
-
 		]]>
 	</fx:Script>
 	
@@ -37,18 +32,21 @@
 	
     <s:states>
         <s:State name="normal"/>
-        <s:State name="hovered"/>
-        <s:State name="selected" />
+		<s:State name="normalAndShowsCaret" stateGroups="back"/>
+        <s:State name="hovered" stateGroups="back" />
+        <s:State name="selected" stateGroups="back" />
     </s:states>
     
-    <s:Rect width="100%" height="100%" includeIn="selected">
+    <s:Rect width="100%" height="100%" includeIn="back">
 		<s:fill>
 			<s:SolidColor color="black" />
 		</s:fill>
 	</s:Rect>
 	
-	<s:RichText text="&lt;{this.argsAsXML.name()}&gt;{this.argsAsXML.text()}&lt;/{this.argsAsXML.name()}&gt;" 
-		width="100%" color.selected="gray" height="15"/>
-	
+	<s:RichEditableText id="argTxt"
+		text="&lt;{this.argsAsXML.name()}&gt;{this.argsAsXML.text()}&lt;/{this.argsAsXML.name()}&gt;" 
+		width="100%" color.back="gray" height="15" verticalAlign="middle" 
+		focusIn="{this.showsCaret=true;}"
+		focusOut="{this.showsCaret = false}"/>
 	
 </s:ItemRenderer>
