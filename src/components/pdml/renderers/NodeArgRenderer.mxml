@@ -4,16 +4,15 @@
 
 	<fx:Script>
 		<![CDATA[
-			import mx.collections.ArrayCollection;
-			import mx.managers.FocusManager;
+			import data.model.PdmlFileNodeArg;
 			
 			[Bindable]
-			private var argXML:XML;
+			private var nodeArg:PdmlFileNodeArg;
 			
 			public override function set data(value:Object) : void
 			{
 				super.data = value;
-				this.argXML = XML(value);
+				this.nodeArg = value as PdmlFileNodeArg;
 			}
 		]]>
 	</fx:Script>
@@ -36,7 +35,7 @@
 	</s:Rect>
 	
 	<s:RichEditableText id="argTxt"
-		text="&lt;{this.argXML.name()}&gt;{this.argXML.text()}&lt;/{this.argXML.name()}&gt;" 
+		text="&lt;{this.nodeArg.argName}&gt;{this.nodeArg.argValue}&lt;/{this.nodeArg.argName}&gt;" 
 		width="100%" color.back="gray" height="15" verticalAlign="middle" 
 		focusIn="{this.showsCaret = true;}"
 		focusOut="{this.showsCaret = false;}"/>

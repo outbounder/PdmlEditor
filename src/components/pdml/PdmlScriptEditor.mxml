@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:List xmlns:fx="http://ns.adobe.com/mxml/2009" 
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
 		 xmlns:mx="library://ns.adobe.com/flex/halo"
-		 itemRendererFunction="{this.getAsPdmlNodeView}"
-		 dataProvider="{this.pdmlNodesList}"
 		 dragEnter="onDragEnter(event)"
 		 dragDrop="onDragDrop(event)"
-		 dragOver="onDragOver(event)"
-		 rendererAdd="onRendererAdd(event)"
-		 rendererRemove="onRendererRemove(event)">
+		 dragOver="onDragOver(event)">
 	
 	<fx:Script>
 		<![CDATA[
 			import components.pdml.renderers.NodeArgRenderer;
 			import components.pdml.renderers.NodeRenderer;
 			
-			import mx.collections.ArrayCollection;
+			import data.model.MultiModuleInfo;
+			import data.model.MultiModuleMethodInfo;
+			import data.model.PdmlFile;
+			import data.model.PdmlFileNode;
+			import data.model.PdmlFileNodeArg;
+			
+			import flash.events.MouseEvent;
+			
 			import mx.core.IVisualElement;
 			import mx.core.UIComponent;
 			import mx.events.DragEvent;
@@ -25,16 +28,21 @@
 			import spark.events.RendererExistenceEvent;
 			
 			[Bindable]
-			private var pdmlNodesList:ArrayCollection;
+			private var pdmlFile:PdmlFile;
+			
 			private var overRendererOnDrag:IVisualElement;
+			private var currentSelectedPdmlNode:ItemRenderer;
 			
 			protected function onDragEnter(event:DragEvent):void
 			{
 				this.overRendererOnDrag  = null;
-				if(event.dragSource.hasFormat("treeItems") || event.dragSource.hasFormat("module") || event.dragSource.hasFormat("pdmlNode"))
+				if(event.dragSource.hasFormat("treeItems") ||
+					event.dragSource.hasFormat("pdmlNode") ||
+					event.dragSource.hasFormat("module") || 
+					event.dragSource.hasFormat("moduleMethod"))
 				{
-					if(this.dataProvider == null)
-							this.dataProvider = new ArrayCollection();
+					if(this.pdmlFile == null)
+						this.pdmlFile = new PdmlFile(null);
 					DragManager.acceptDragDrop(event.currentTarget as UIComponent);
 				}
 			}
@@ -53,59 +61,85 @@
 					stream.open(file, FileMode.READ);
 					var contents:String = stream.readUTFBytes(stream.bytesAvailable);
 					var xml:XML = new XML(contents);
-					this.pdmlNodesList = new ArrayCollection();
-					for each(var node:XML in xml.children())
-						this.pdmlNodesList.addItem(node);
+					this.pdmlFile = new PdmlFile(xml);
 				}
 				if(event.dragSource.hasFormat("module"))
 				{
-					var moduleXML:XML = XML(event.dragSource.dataForFormat("module"));
-					var newNode:XML = new XML("<execute classname='"+moduleXML..module[0].@name+"'></execute>");
+					var moduleInfo:MultiModuleInfo = event.dragSource.dataForFormat("module") as MultiModuleInfo;
+					var newNode:PdmlFileNode = moduleInfo.asPdmlFileNode();
 					if(this.overRendererOnDrag != null)
-						this.dataProvider.addItemAt(newNode, this.dataGroup.getElementIndex(this.overRendererOnDrag)+1);
+						this.pdmlFile.nodes.addItemAt(newNode, this.pdmlNodesView.getElementIndex(this.overRendererOnDrag)+1);
 					else
-						this.dataProvider.addItem(newNode);
-					this.selectedIndex = -1;
+						this.pdmlFile.nodes.addItem(newNode);
+					if(this.currentSelectedPdmlNode != null)
+						this.currentSelectedPdmlNode.selected = false;
+					this.currentSelectedPdmlNode = null;
+				}
+				if(event.dragSource.hasFormat("moduleMethod"))
+				{
+					var methodInfo:MultiModuleMethodInfo = event.dragSource.dataForFormat("moduleMethod") as MultiModuleMethodInfo;
+					var newNode:PdmlFileNode = methodInfo.asPdmlFileNode();
+					if(this.overRendererOnDrag != null)
+						this.pdmlFile.nodes.addItemAt(newNode, this.pdmlNodesView.getElementIndex(this.overRendererOnDrag)+1);
+					else
+						this.pdmlFile.nodes.addItem(newNode);
+					if(this.currentSelectedPdmlNode != null)
+						this.currentSelectedPdmlNode.selected = false;
+					this.currentSelectedPdmlNode = null;
 				}
 				if(event.dragSource.hasFormat("pdmlNode"))
 				{
 					var src:ItemRenderer = event.dragInitiator as ItemRenderer;
 					var dest:ItemRenderer = this.overRendererOnDrag as ItemRenderer;
 					var srcData:Object = src.data;
-					this.pdmlNodesList.removeItemAt(this.pdmlNodesList.getItemIndex(srcData));
+					this.pdmlFile.nodes.removeItemAt(this.pdmlFile.nodes.getItemIndex(srcData));
 					if(dest != null)
 					{
 						var destData:Object = dest.data;
-						this.pdmlNodesList.addItemAt(srcData, this.pdmlNodesList.getItemIndex(destData));
+						this.pdmlFile.nodes.addItemAt(srcData, this.pdmlFile.nodes.getItemIndex(destData));
 					}
 					else
-						this.pdmlNodesList.addItem(srcData);
+						this.pdmlFile.nodes.addItem(srcData);
 				}
 			}
 			
 			private function getAsPdmlNodeView(item:Object):IFactory
 			{
-				if("@classname" in item)
+				if(item is PdmlFileNode)
 					return new ClassFactory(NodeRenderer);
 				else
+				if(item is PdmlFileNodeArg)
 					return new ClassFactory(NodeArgRenderer);
+				else
+					return new ClassFactory(NodeRenderer);
 			}
 
 			protected function onRendererAdd(event:RendererExistenceEvent):void
 			{
 				event.renderer.addEventListener(DragEvent.DRAG_OVER, onRendererDragOver);
 				event.renderer.addEventListener(DragEvent.DRAG_EXIT, onRendererDragExit);
+				event.renderer.addEventListener(MouseEvent.CLICK, onRendererClick);
 			}
 			
 			protected function onRendererRemove(event:RendererExistenceEvent):void
 			{
 				event.renderer.removeEventListener(DragEvent.DRAG_OVER, onRendererDragOver);
 				event.renderer.removeEventListener(DragEvent.DRAG_EXIT, onRendererDragExit);
+				event.renderer.removeEventListener(MouseEvent.CLICK, onRendererClick);
+			}
+			
+			private function onRendererClick(e:MouseEvent):void
+			{
+				if(this.currentSelectedPdmlNode != null)
+					this.currentSelectedPdmlNode.selected = false;
+				
+				this.currentSelectedPdmlNode = e.currentTarget as ItemRenderer;
+				this.currentSelectedPdmlNode.selected = true;
 			}
 			
 			private function onRendererDragOver(e:DragEvent):void
 			{
-				(e.target as UIComponent).currentState = "selected";
+				(e.target as UIComponent).currentState = "hovered";
 				this.overRendererOnDrag = e.target as IVisualElement;
 			}
 			
@@ -117,4 +151,17 @@
 		]]>
 	</fx:Script>
 	
-</s:List>
+	<s:RichText text="PDML PARSER CLASS PATH" height="20" textAlign="center" verticalAlign="middle" width="100%" />
+	<s:DataGroup 
+			id="pdmlNodesView" width="100%" height="100%" 
+			itemRendererFunction="{this.getAsPdmlNodeView}"
+			dataProvider="{this.pdmlFile.nodes}"
+			rendererAdd="onRendererAdd(event)"
+			rendererRemove="onRendererRemove(event)">
+		<s:layout>
+			<s:VerticalLayout gap="1" />
+		</s:layout>
+	</s:DataGroup>
+		
+	
+</s:VGroup>

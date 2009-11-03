@@ -2,42 +2,55 @@
 <s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
 				xmlns:s="library://ns.adobe.com/flex/spark" 
 				xmlns:mx="library://ns.adobe.com/flex/halo"
-				width="100%">
+				width="100%"
+				mouseDown="onMouseDown(event)">
 	<fx:Script>
 		<![CDATA[
+			import data.model.MultiModuleInfo;
+			import data.model.MultiModuleMethodInfo;
+			
 			import flash.events.DataEvent;
 			import flash.events.MouseEvent;
 			
 			import haxe.org.dassista.api.rest.as3.RestService;
 			
 			import mx.collections.ArrayCollection;
+			import mx.core.DragSource;
+			import mx.core.UIComponent;
+			import mx.managers.DragManager;
 			
 			import spark.events.RendererExistenceEvent;
-			[Bindable]
-			private var moduleInfoXML:XML;
-			[Bindable]
-			private var moduleName:String;
-			[Bindable]
-			private var moduleMethods:ArrayCollection;
 			
 			[Bindable]
+			private var moduleInfo:MultiModuleInfo;
+						
+			[Bindable]
 			private var currentSelectedModuleMethod:ItemRenderer;
+			
+			public override function set selected(value:Boolean):void
+			{
+				super.selected = value;
+				if(this.currentSelectedModuleMethod != null && value == false)
+				{
+					this.currentSelectedModuleMethod.selected = false;
+					this.currentSelectedModuleMethod = null;
+				}
+			}
 			
 			public override function set data(value:Object) : void
 			{
 				super.data = value;
-				this.moduleInfoXML = XML(value);
-				this.moduleName = this.moduleInfoXML..module[0].@name;
+				this.moduleInfo = value as MultiModuleInfo;
 			}
 			
 			private function onSelected():void
 			{
-				if(this.moduleMethods == null)
+				if(this.moduleInfo.moduleMethods == null)
 				{
 					var service:RestService = new RestService();
 					service.setValue("module", "haxe.org.dassista.tools.ModuleInfo");
 					service.setValue("method", "listMethods");
-					service.setValue("target", this.moduleName);
+					service.setValue("target", this.moduleInfo.classname);
 					
 					service.load(onModuleMethodsInfo);
 				}
@@ -49,10 +62,10 @@
 				if(data.name()=="ioerror")
 					throw Error(e.data);
 				
-				this.moduleMethods = new ArrayCollection();
+				this.moduleInfo.moduleMethods = new ArrayCollection();
 				for each(var methodXML:XML in data..method)
 				{
-					this.moduleMethods.addItem(methodXML);
+					this.moduleInfo.moduleMethods.addItem(new MultiModuleMethodInfo(methodXML));
 				}
 			}
 			
@@ -69,9 +82,20 @@
 			private function onRendererClick(e:MouseEvent):void
 			{
 				if(this.currentSelectedModuleMethod != null)
-					this.currentSelectedModuleMethod.currentState = "normal";
+					this.currentSelectedModuleMethod.selected = false;
+				
 				this.currentSelectedModuleMethod = e.currentTarget as ItemRenderer;
-				this.currentSelectedModuleMethod.currentState = "selected";
+				this.currentSelectedModuleMethod.selected = true;
+			}
+			
+			private function onMouseDown(e:MouseEvent):void
+			{
+				if(e.target == this)
+				{
+					var dragSource:DragSource = new DragSource();
+					dragSource.addData(this.moduleInfo, "module");
+					DragManager.doDrag(e.target as UIComponent, dragSource, e);
+				}
 			}
 		]]>
 	</fx:Script>
@@ -88,9 +112,9 @@
 		</s:fill>
 	</s:Rect>
 	
-	<s:VGroup width="100%">
-		<s:RichText text="{this.moduleName}" width="100%" />
-		<s:DataGroup dataProvider="{this.moduleMethods}" width="100%" minHeight="0"
+	<s:VGroup width="100%" mouseEnabled="false">
+		<s:RichText text="{this.moduleInfo.classname}" width="100%" mouseChildren="false" mouseEnabled="false" />
+		<s:DataGroup dataProvider="{this.moduleInfo.moduleMethods}" width="100%" minHeight="0"
 				includeIn="selected" itemRenderer="{new ClassFactory(ModuleMethodRenderer)}"
 				rendererAdd="onModuleMethodRendererAdd(event)"
 				rendererRemove="onModuleMethodRendererRemove(event)">
@@ -98,6 +122,7 @@
 				<s:VerticalLayout gap="1" />
 			</s:layout>
 		</s:DataGroup>
+		<mx:Spacer width="100%" height="2" includeIn="selected" mouseChildren="false" mouseEnabled="false" />
 	</s:VGroup>
 	
 </s:ItemRenderer>
