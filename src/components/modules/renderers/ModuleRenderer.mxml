@@ -65,7 +65,8 @@
 				this.moduleInfo.moduleMethods = new ArrayCollection();
 				for each(var methodXML:XML in data..method)
 				{
-					this.moduleInfo.moduleMethods.addItem(new MultiModuleMethodInfo(methodXML));
+					var method:MultiModuleMethodInfo = new MultiModuleMethodInfo(methodXML);
+					this.moduleInfo.moduleMethods.addItem(method);
 				}
 			}
 			
@@ -92,6 +93,7 @@
 			{
 				if(e.target == this)
 				{
+					this.selected = true;
 					var dragSource:DragSource = new DragSource();
 					dragSource.addData(this.moduleInfo, "module");
 					DragManager.doDrag(e.target as UIComponent, dragSource, e);

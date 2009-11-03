@@ -36,8 +36,17 @@
 			protected function onDragEnter(event:DragEvent):void
 			{
 				this.overRendererOnDrag  = null;
-				if(event.dragSource.hasFormat("treeItems") ||
-					event.dragSource.hasFormat("pdmlNode") ||
+				if(event.dragSource.hasFormat("treeItems"))
+				{
+					var treeItems:Array = event.dragSource.dataForFormat("treeItems") as Array;
+					if(treeItems.length == 1)
+					{
+						var item:File = treeItems[0] as File;
+						if(item.extension == "pdml")
+							DragManager.acceptDragDrop(event.currentTarget as UIComponent);
+					}
+				}
+				if(event.dragSource.hasFormat("pdmlNode") ||
 					event.dragSource.hasFormat("module") || 
 					event.dragSource.hasFormat("moduleMethod"))
 				{

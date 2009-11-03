@@ -12,11 +12,13 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import data.RuntimeContext;
 			import data.model.MultiModuleInfo;
 			
 			import flash.Boot;
 			import flash.display.MovieClip;
 			import flash.events.DataEvent;
+			import flash.events.MouseEvent;
 			
 			import haxe.org.dassista.api.rest.as3.IRestServiceContext;
 			import haxe.org.dassista.api.rest.as3.RestService;
@@ -55,14 +57,16 @@
 			
 			private function onGetRootFolderRealPathResult(e:DataEvent):void
 			{
-				var data:XML = XML(e.data);
-				if(data.name()=="ioerror")
+				var rootFolderXML:XML = XML(e.data);
+				if(rootFolderXML.name()=="ioerror")
 				{
 					this.currentState = "resterror";
 					return;
 				}
 				
-				this.rootFolder = new File(data.text());
+				var context:RuntimeContext = new RuntimeContext();
+				context.rootFolder = rootFolderXML.text();
+				this.rootFolder = new File(rootFolderXML.text());
 				
 				// module info
 				var moduleInfoContext:IRestServiceContext = this.restService.clone();
@@ -82,18 +86,17 @@
 					
 				this.currentState = "intialized";
 			}
+			
+			private function onTreeRightClick(e:MouseEvent):void
+			{
+				this.fileSystemTreeMenu.visible = true;
+				this.fileSystemTreeMenu.x = e.localX;
+				this.fileSystemTreeMenu.y = e.localY;
+			}
 		]]>
 	</fx:Script>
 
-	<fx:Declarations>
-		<fx:XMLList id="fileSystemTreeMenu">
-            <menuitem label="File">
-                <menuitem label="Create pdml (drag and drop support)" enabled="false"/>
-                <menuitem label="Create path" enabled="false"/>
-            </menuitem>
-        </fx:XMLList>
-	</fx:Declarations>
-	
+
 	<s:states>
 		<s:State name="loading" />
 		<s:State name="intialized" />
@@ -108,11 +111,18 @@
 	
 	<mx:HDividedBox width="100%" height="100%" includeIn="intialized">
 		<s:VGroup width="50%" height="100%">
-			<mx:MenuBar width="100%" dataProvider="{this.fileSystemTreeMenu}" labelField="@label" />
 			<mx:VDividedBox width="100%" height="100%">
-				<mx:FileSystemTree id="fileSystemTree" width="100%" height="100%" 
-								   directory="{this.rootFolder}"
-								   dragEnabled="true"/>
+				<s:Group width="100%" height="100%">
+					<mx:FileSystemTree id="fileSystemTree" width="100%" height="100%" 
+									   directory="{this.rootFolder}"
+									   dragEnabled="true"
+									   rightClick="onTreeRightClick(event)"/>
+					<s:HGroup id="fileSystemTreeMenu" visible="false">
+						<s:RichText text="create pdml here" />
+						<s:RichText text="save here as ..." />
+						<s:RichText text="never mind" />
+					</s:HGroup>
+				</s:Group>
 				<modules:ModulesPool width="100%" height="100%" modulesList="{this.modulesList}"  />	
 			</mx:VDividedBox>
 		</s:VGroup>

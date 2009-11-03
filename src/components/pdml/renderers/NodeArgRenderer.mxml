@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:mx="library://ns.adobe.com/flex/halo"
-	width="100%">
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/halo"
+				width="100%"
+				dragEnter="onDragEnter(event)"
+				dragDrop="onDragDrop(event)">
 
 	<fx:Script>
 		<![CDATA[
+			import data.RuntimeContext;
 			import data.model.PdmlFileNodeArg;
+			
+			import haxe.org.dassista.api.rest.as3.RestService;
+			
+			import mx.core.UIComponent;
+			import mx.events.DragEvent;
+			import mx.managers.DragManager;
 			
 			[Bindable]
 			private var nodeArg:PdmlFileNodeArg;
@@ -13,6 +24,32 @@
 			{
 				super.data = value;
 				this.nodeArg = value as PdmlFileNodeArg;
+			}
+			
+			private function onDragEnter(e:DragEvent):void
+			{
+				if(e.dragSource.hasFormat("treeItems"))
+				{
+					var treeItems:Array = e.dragSource.dataForFormat("treeItems") as Array;
+					if(treeItems.length == 1)
+					{
+						DragManager.acceptDragDrop(e.currentTarget as UIComponent);
+					}
+				}
+			}
+			
+			private function onDragDrop(e:DragEvent):void
+			{
+				if(e.dragSource.hasFormat("treeItems"))
+				{
+					var treeItems:Array = e.dragSource.dataForFormat("treeItems") as Array;
+					var file:File = treeItems[0] as File;
+					var context:RuntimeContext = new RuntimeContext();
+					if(this.nodeArg.argValue.length == 0)
+						this.nodeArg.argValue = RestService.getClassPath(context.rootFolder, file.nativePath);
+					else
+						this.nodeArg.argValue += RestService.getClassPath(context.rootFolder, file.nativePath);
+				}
 			}
 		]]>
 	</fx:Script>
@@ -23,21 +60,20 @@
 	
     <s:states>
         <s:State name="normal"/>
-		<s:State name="normalAndShowsCaret" stateGroups="back"/>
-        <s:State name="hovered" stateGroups="back" />
-        <s:State name="selected" stateGroups="back" />
+        <s:State name="hovered" />
+        <s:State name="selected" />
     </s:states>
     
-    <s:Rect width="100%" height="100%" includeIn="back">
+    <s:Rect width="100%" height="100%" includeIn="hovered">
 		<s:fill>
 			<s:SolidColor color="black" />
 		</s:fill>
 	</s:Rect>
 	
-	<s:RichEditableText id="argTxt"
-		text="&lt;{this.nodeArg.argName}&gt;{this.nodeArg.argValue}&lt;/{this.nodeArg.argName}&gt;" 
-		width="100%" color.back="gray" height="15" verticalAlign="middle" 
-		focusIn="{this.showsCaret = true;}"
-		focusOut="{this.showsCaret = false;}"/>
+	<s:HGroup verticalAlign="middle">
+		<s:RichText text="&lt;{this.nodeArg.argName}&gt;" color.hovered="gray"  />
+		<s:RichEditableText id="argValueView" text="@{this.nodeArg.argValue}" color.hovered="gray" />
+		<s:RichText text="&lt;/{this.nodeArg.argName}&gt;" color.hovered="gray" />
+	</s:HGroup>
 	
 </s:ItemRenderer>
