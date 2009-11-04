@@ -55,12 +55,12 @@
 		   itemRenderer="{this.treeItemRenderer}"/>
 	
 	<repo:PdmlFileTreeOptions id="pdmlFileTreeOptionsView" 
-		rootFolder="{this.fileSystemTree.selectedPath}"
 		includeIn="pdmlFileTreeOptions"
 		horizontalAlign="center" width="100%" verticalCenter="0"
 		complete="onComplete()" />
 	
 	<repo:FileTreeOptions id="fileTreeOptionsView"
+		rootFolder="{this.fileSystemTree.selectedPath}"
 		includeIn="currentOptions"
 		horizontalAlign="center" width="100%" verticalCenter="0"
 		complete="onComplete()"/>
