@@ -79,6 +79,8 @@
 		<s:State name="optionsView" />
 	</s:states>
 	
+	<mx:Spacer height="5" />
+	
 	<s:HGroup id="header" width="100%" gap="1" mouseDown="onMouseDownHeader(event)" mouseChildren="false">
 		<s:RichText text="&lt;{this.pdmlFile.rootTagName}" />
 		<s:RichText text="classname=&quot;{this.pdmlFile.classname}&quot;" />
@@ -88,7 +90,7 @@
 			
 	<s:Group width="100%">
 		
-		<pdml:PdmlScriptEditor id="editorView" left="20" right="0"
+		<pdml:PdmlScriptEditor id="editorView" left="20" right="0" 
 				   rightClick="onRightClick()"
 				   pdmlFile="@{this.pdmlFile}"
 				   includeIn="scriptView"
