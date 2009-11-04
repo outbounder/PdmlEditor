@@ -11,13 +11,9 @@
 			import components.pdml.renderers.NodeArgRenderer;
 			import components.pdml.renderers.NodeRenderer;
 			
-			import data.model.MultiModuleInfo;
-			import data.model.MultiModuleMethodInfo;
 			import data.model.PdmlFile;
 			import data.model.PdmlFileNode;
 			import data.model.PdmlFileNodeArg;
-			
-			import flash.events.MouseEvent;
 			
 			import mx.core.IVisualElement;
 			import mx.core.UIComponent;
@@ -30,64 +26,35 @@
 			[Bindable]
 			public var pdmlFile:PdmlFile;
 			
-			private var overRendererOnDrag:IVisualElement;
 			private var currentSelectedPdmlNode:ItemRenderer;
-			
+			private var lastHoveredPdmlNode:int;
+				
 			private function onDragEnter(event:DragEvent):void
 			{
-				this.overRendererOnDrag  = null;
-				if(event.dragSource.hasFormat("pdmlNode") ||
-					event.dragSource.hasFormat("module") || 
-					event.dragSource.hasFormat("moduleMethod"))
+				if(event.dragSource.hasFormat("pdmlNode"))
 				{
 					if(this.pdmlFile == null)
 						this.pdmlFile = new PdmlFile(null);
+					this.lastHoveredPdmlNode = -1;
 					DragManager.acceptDragDrop(event.currentTarget as UIComponent);
 				}
 			}
 			
 			private function onDragOver(event:DragEvent):void
 			{
-				this.overRendererOnDrag = null;
+				this.lastHoveredPdmlNode = -1;
 			}
 			
 			protected function onDragDrop(event:DragEvent):void
 			{
-				if(event.dragSource.hasFormat("module"))
-				{
-					var moduleInfo:MultiModuleInfo = event.dragSource.dataForFormat("module") as MultiModuleInfo;
-					var newNode:PdmlFileNode = moduleInfo.asPdmlFileNode();
-					if(this.overRendererOnDrag != null)
-						this.pdmlFile.nodes.addItemAt(newNode, this.pdmlNodesView.getElementIndex(this.overRendererOnDrag)+1);
-					else
-						this.pdmlFile.nodes.addItem(newNode);
-					if(this.currentSelectedPdmlNode != null)
-						this.currentSelectedPdmlNode.selected = false;
-					this.currentSelectedPdmlNode = null;
-				}
-				if(event.dragSource.hasFormat("moduleMethod"))
-				{
-					var methodInfo:MultiModuleMethodInfo = event.dragSource.dataForFormat("moduleMethod") as MultiModuleMethodInfo;
-					var newNode:PdmlFileNode = methodInfo.asPdmlFileNode();
-					if(this.overRendererOnDrag != null)
-						this.pdmlFile.nodes.addItemAt(newNode, this.pdmlNodesView.getElementIndex(this.overRendererOnDrag)+1);
-					else
-						this.pdmlFile.nodes.addItem(newNode);
-					if(this.currentSelectedPdmlNode != null)
-						this.currentSelectedPdmlNode.selected = false;
-					this.currentSelectedPdmlNode = null;
-				}
 				if(event.dragSource.hasFormat("pdmlNode"))
 				{
 					var src:ItemRenderer = event.dragInitiator as ItemRenderer;
-					var dest:ItemRenderer = this.overRendererOnDrag as ItemRenderer;
 					var srcData:Object = src.data;
+					
 					this.pdmlFile.nodes.removeItemAt(this.pdmlFile.nodes.getItemIndex(srcData));
-					if(dest != null)
-					{
-						var destData:Object = dest.data;
-						this.pdmlFile.nodes.addItemAt(srcData, this.pdmlFile.nodes.getItemIndex(destData));
-					}
+					if(this.lastHoveredPdmlNode != -1)
+						this.pdmlFile.nodes.addItemAt(srcData, this.lastHoveredPdmlNode);
 					else
 						this.pdmlFile.nodes.addItem(srcData);
 				}
@@ -130,7 +97,7 @@
 			private function onRendererDragOver(e:DragEvent):void
 			{
 				(e.target as UIComponent).currentState = "hovered";
-				this.overRendererOnDrag = e.target as IVisualElement;
+				this.lastHoveredPdmlNode = this.pdmlNodesView.getElementIndex(e.target as IVisualElement);
 			}
 			
 			private function onRendererDragExit(e:DragEvent):void
@@ -140,12 +107,6 @@
 
 		]]>
 	</fx:Script>
-	
-	<s:Rect width="100%" height="100%" alpha="0.5">
-		<s:fill>
-			<s:SolidColor color="gray"/>
-		</s:fill>
-	</s:Rect>
 	
 	<s:DataGroup 
 			id="pdmlNodesView" width="100%" height="100%" 

@@ -7,25 +7,49 @@
 		<![CDATA[
 			import components.modules.renderers.ModuleRenderer;
 			
+			import flash.events.MouseEvent;
+			
 			import mx.collections.ArrayCollection;
+			
+			import spark.components.supportClasses.ItemRenderer;
+			import spark.events.RendererExistenceEvent;
 			
 			[Bindable]
 			public var modulesList:ArrayCollection;
+			[Bindable]
+			private var currentSelectedModule:ModuleRenderer;
 			
-			/* private function onMouseDown(event:MouseEvent):void
+		
+			private function onRendererAdd(e:RendererExistenceEvent):void
 			{
-				if(this.modulesListView.selectedIndex == -1)
-					return;
-				var dragSource:DragSource = new DragSource();
-				dragSource.addData(this.modulesListView.selectedItem, "module");
-				DragManager.doDrag(this.modulesListView.dataGroup.getElementAt(this.modulesListView.selectedIndex) as UIComponent, 
-						dragSource, event);
-			} */
+				(e.renderer as ItemRenderer).addEventListener(MouseEvent.MOUSE_DOWN, onRendererClick);
+			}
+			
+			private function onRendererRemove(e:RendererExistenceEvent):void
+			{
+				(e.renderer as ItemRenderer).removeEventListener(MouseEvent.MOUSE_DOWN, onRendererClick);
+			}
+			
+			private function onRendererClick(e:MouseEvent):void
+			{
+				if(e.target is ModuleRenderer)
+				{
+					if(this.currentSelectedModule != null)
+						this.currentSelectedModule.selected = false;
+				
+					this.currentSelectedModule = e.target as ModuleRenderer;
+					this.currentSelectedModule.selected = true;
+				}
+			}
 		]]>
 	</fx:Script>
 	
-	<s:List id="modulesListView" height="100%" width="100%"
+	<s:DataGroup id="modulesListView" height="100%" width="100%"
 			dataProvider="{this.modulesList}"
-			itemRenderer="{new ClassFactory(ModuleRenderer)}"/>
+			itemRenderer="{new ClassFactory(ModuleRenderer)}"
+			rendererAdd="onRendererAdd(event)"
+			rendererRemove="onRendererRemove(event)">
+		<s:layout><s:VerticalLayout gap="1" /></s:layout>
+	</s:DataGroup>
 	
 </s:Group>

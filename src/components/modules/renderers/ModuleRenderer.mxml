@@ -25,17 +25,7 @@
 			private var moduleInfo:MultiModuleInfo;
 						
 			[Bindable]
-			private var currentSelectedModuleMethod:ItemRenderer;
-			
-			public override function set selected(value:Boolean):void
-			{
-				super.selected = value;
-				if(this.currentSelectedModuleMethod != null && value == false)
-				{
-					this.currentSelectedModuleMethod.selected = false;
-					this.currentSelectedModuleMethod = null;
-				}
-			}
+			private var currentSelectedModuleMethod:ModuleMethodRenderer;
 			
 			public override function set data(value:Object) : void
 			{
@@ -82,18 +72,19 @@
 			
 			private function onRendererClick(e:MouseEvent):void
 			{
-				if(this.currentSelectedModuleMethod != null)
-					this.currentSelectedModuleMethod.selected = false;
-				
-				this.currentSelectedModuleMethod = e.currentTarget as ItemRenderer;
-				this.currentSelectedModuleMethod.selected = true;
+				if(e.target is ModuleMethodRenderer)
+				{
+					if(this.currentSelectedModuleMethod != null)
+						this.currentSelectedModuleMethod.selected = false;
+					this.currentSelectedModuleMethod = e.target as ModuleMethodRenderer;
+					this.currentSelectedModuleMethod.selected = true;
+				}
 			}
 			
 			private function onMouseDown(e:MouseEvent):void
 			{
 				if(e.target == this)
 				{
-					this.selected = true;
 					var dragSource:DragSource = new DragSource();
 					dragSource.addData(this.moduleInfo, "module");
 					DragManager.doDrag(e.target as UIComponent, dragSource, e);

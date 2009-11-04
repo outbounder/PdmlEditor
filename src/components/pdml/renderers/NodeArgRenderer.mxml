@@ -4,8 +4,8 @@
 				xmlns:mx="library://ns.adobe.com/flex/halo"
 				width="100%"
 				dragEnter="onDragEnter(event)"
-				dragOver="onDragOver()"
-				dragExit="onDragExit()"
+				dragOver="onDragOver(event)"
+				dragExit="onDragExit(event)"
 				dragDrop="onDragDrop(event)">
 
 	<fx:Script>
@@ -49,16 +49,17 @@
 					var context:RuntimeContext = new RuntimeContext();
 					this.nodeArg.argValue = RestService.getClassPath(context.rootFolder, file.nativePath);
 					
-					this.onDragExit();
+					this.onDragExit(e);
 				}
 			}
 			
-			private function onDragOver():void
+			private function onDragOver(event:DragEvent):void
 			{
-				this.currentState = 'hovered';
+				if(event.dragSource.hasFormat("treeItems"))
+					this.currentState = 'hovered';
 			}
 			
-			private function onDragExit():void
+			private function onDragExit(event:DragEvent):void
 			{
 				if(!this.selected)
 					this.currentState = 'normal';

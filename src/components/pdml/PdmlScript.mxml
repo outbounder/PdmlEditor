@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
 		 xmlns:mx="library://ns.adobe.com/flex/halo" 
 		 xmlns:pdml="components.pdml.*" 
 		 xmlns:components="components.*"
 		 currentState="scriptView"
+		 rightClick="onRightClick()"
 		 dragEnter="onDragEnter(event)"
 		 dragDrop="onDragDrop(event)">
 	
 	<fx:Script>
 		<![CDATA[
+			import data.model.MultiModuleInfo;
+			import data.model.MultiModuleMethodInfo;
 			import data.model.PdmlFile;
+			import data.model.PdmlFileNode;
 			
 			import flash.events.MouseEvent;
 			
@@ -45,6 +49,12 @@
 							DragManager.acceptDragDrop(event.currentTarget as UIComponent);
 					}
 				}
+				if(event.dragSource.hasFormat("module") || event.dragSource.hasFormat("moduleMethod"))
+				{
+					if(this.pdmlFile == null)
+						this.pdmlFile = new PdmlFile(null);
+					DragManager.acceptDragDrop(event.currentTarget as UIComponent);
+				}
 			}
 			
 			private function onDragDrop(event:DragEvent):void
@@ -59,6 +69,19 @@
 					
 					this.pdmlFile = new PdmlFile(xml);
 					this.pdmlFile.nativeFile = file;
+				}
+				
+				if(event.dragSource.hasFormat("module"))
+				{
+					var moduleInfo:MultiModuleInfo = event.dragSource.dataForFormat("module") as MultiModuleInfo;
+					var newNode:PdmlFileNode = moduleInfo.asPdmlFileNode();
+					this.pdmlFile.nodes.addItem(newNode);
+				}
+				if(event.dragSource.hasFormat("moduleMethod"))
+				{
+					var methodInfo:MultiModuleMethodInfo = event.dragSource.dataForFormat("moduleMethod") as MultiModuleMethodInfo;
+					var newNode:PdmlFileNode = methodInfo.asPdmlFileNode();
+					this.pdmlFile.nodes.addItem(newNode);
 				}
 			}
 			
@@ -79,28 +102,35 @@
 		<s:State name="optionsView" />
 	</s:states>
 	
-	<mx:Spacer height="5" />
+	<s:Rect width="100%" height="100%" alpha="0.5">
+		<s:fill>
+			<s:SolidColor color="gray"/>
+		</s:fill>
+	</s:Rect>
 	
-	<s:HGroup id="header" width="100%" gap="1" mouseDown="onMouseDownHeader(event)" mouseChildren="false">
-		<s:RichText text="&lt;{this.pdmlFile.rootTagName}" />
-		<s:RichText text="classname=&quot;{this.pdmlFile.classname}&quot;" />
-		<s:RichText text="parser=&quot;{this.pdmlFile.parser}&quot;" />
-		<s:RichText text="&gt;" />
-	</s:HGroup>
-			
-	<s:Group width="100%">
+	<s:VGroup width="100%" height="100%" >
 		
-		<pdml:PdmlScriptEditor id="editorView" left="20" right="0" 
-				   rightClick="onRightClick()"
-				   pdmlFile="@{this.pdmlFile}"
-				   includeIn="scriptView"
-				   minHeight="20"/>
+		<mx:Spacer height="5" />
 		
-		<s:VGroup horizontalAlign="center" verticalCenter="0" width="100%" includeIn="optionsView">
-			<s:Button label="create empty pdml" width="200" click="onNewEmptyPdml()"/>
-			<s:Button label="cancel" width="200" click="{this.currentState = 'scriptView'}"/>
-		</s:VGroup>
-	</s:Group>
+		<s:HGroup id="header" width="100%" gap="1" mouseDown="onMouseDownHeader(event)" mouseChildren="false">
+			<s:RichText text="&lt;{this.pdmlFile.rootTagName}" />
+			<s:RichText text="classname=&quot;{this.pdmlFile.classname}&quot;" />
+			<s:RichText text="parser=&quot;{this.pdmlFile.parser}&quot;" />
+			<s:RichText text="&gt;" />
+		</s:HGroup>
+				
+		<s:Group width="100%">
+			<pdml:PdmlScriptEditor id="editorView" left="20" right="0" 
+					   pdmlFile="@{this.pdmlFile}"
+					   includeIn="scriptView"
+					   minHeight="20"/>
+		</s:Group>
+		
+		<s:RichText text="&lt;/{this.pdmlFile.rootTagName}&gt;" width="100%"/>
+	</s:VGroup>
 	
-	<s:RichText text="&lt;/{this.pdmlFile.rootTagName}&gt;" width="100%"/>	
-</s:VGroup>
+	<s:VGroup horizontalAlign="center" verticalCenter="0" width="100%" includeIn="optionsView">
+		<s:Button label="create empty pdml" width="200" click="onNewEmptyPdml()"/>
+		<s:Button label="cancel" width="200" click="{this.currentState = 'scriptView'}"/>
+	</s:VGroup>
+</s:Group>
