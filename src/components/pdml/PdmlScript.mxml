@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/halo" 
+		 xmlns:pdml="components.pdml.*" 
+		 xmlns:components="components.*"
+		 currentState="scriptView"
+		 dragEnter="onDragEnter(event)"
+		 dragDrop="onDragDrop(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import data.model.PdmlFile;
+			
+			import flash.events.MouseEvent;
+			
+			import mx.core.DragSource;
+			import mx.core.UIComponent;
+			import mx.events.DragEvent;
+			import mx.managers.DragManager;
+			
+			[Bindable]
+			private var pdmlFile:PdmlFile;
+			
+			private function onRightClick():void
+			{
+				this.currentState = 'optionsView';
+			}
+			
+			private function onNewEmptyPdml():void
+			{
+				this.pdmlFile = new PdmlFile(null);
+				this.currentState = 'scriptView';
+			}
+			
+			private function onDragEnter(event:DragEvent):void
+			{
+				if(event.dragSource.hasFormat("treeItems"))
+				{
+					var treeItems:Array = event.dragSource.dataForFormat("treeItems") as Array;
+					if(treeItems.length == 1)
+					{
+						var item:File = treeItems[0] as File;
+						if(item.extension == "pdml")
+							DragManager.acceptDragDrop(event.currentTarget as UIComponent);
+					}
+				}
+			}
+			
+			private function onDragDrop(event:DragEvent):void
+			{
+				if(event.dragSource.hasFormat("treeItems"))
+				{
+					var file:File = event.dragSource.dataForFormat("treeItems")[0] as File;
+					var stream:FileStream = new FileStream();
+					stream.open(file, FileMode.READ);
+					var contents:String = stream.readUTFBytes(stream.bytesAvailable);
+					var xml:XML = new XML(contents);
+					
+					this.pdmlFile = new PdmlFile(xml);
+					this.pdmlFile.nativeFile = file;
+				}
+			}
+			
+			private function onMouseDownHeader(e:MouseEvent):void
+			{
+				if(e.target == this.header)
+				{
+					var dragSource:DragSource = new DragSource();
+					dragSource.addData(this.pdmlFile, "pdmlFile");
+					DragManager.doDrag(this.header, dragSource, e);
+				}
+			}
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="scriptView" />
+		<s:State name="optionsView" />
+	</s:states>
+	
+	<s:HGroup id="header" width="100%" gap="1" mouseDown="onMouseDownHeader(event)" mouseChildren="false">
+		<s:RichText text="&lt;{this.pdmlFile.rootTagName}" />
+		<s:RichText text="classname=&quot;{this.pdmlFile.classname}&quot;" />
+		<s:RichText text="parser=&quot;{this.pdmlFile.parser}&quot;" />
+		<s:RichText text="&gt;" />
+	</s:HGroup>
+			
+	<s:Group width="100%">
+		
+		<pdml:PdmlScriptEditor id="editorView" left="20" right="0"
+				   rightClick="onRightClick()"
+				   pdmlFile="@{this.pdmlFile}"
+				   includeIn="scriptView"
+				   minHeight="20"/>
+		
+		<s:VGroup horizontalAlign="center" verticalCenter="0" width="100%" includeIn="optionsView">
+			<s:Button label="create empty pdml" width="200" click="onNewEmptyPdml()"/>
+			<s:Button label="cancel" width="200" click="{this.currentState = 'scriptView'}"/>
+		</s:VGroup>
+	</s:Group>
+	
+	<s:RichText text="&lt;/{this.pdmlFile.rootTagName}&gt;" width="100%"/>	
+</s:VGroup>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/halo">
+	
+	<fx:Metadata>
+		[Event(name='valueCommit', type='mx.events.FlexEvent')]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			import flash.events.Event;
+			
+			import mx.events.FlexEvent;
+			
+			[Bindable]
+			public var prefix:String = "";
+			[Bindable]
+			public var emptyValue:String = "...";
+			[Bindable]
+			public var suffix:String = "";
+			
+			private var editValue:String = "";
+			
+			[Bindable]
+			public function get value():String
+			{
+				if(this.valueText.text == this.emptyValue)
+					return "";
+				return this.valueText.text;
+			}
+				
+			public function set value(value:String):void
+			{
+				if(value == "" || value == null)
+					this.valueText.text = this.emptyValue;
+				else
+					this.valueText.text = value;
+			}
+			
+			private function onValueEnterKey():void
+			{
+				this.btn.setFocus();
+				this.onClick();
+			}
+			
+			private function onValueFocusIn():void
+			{
+				if(this.valueText.text == this.emptyValue)
+					this.valueText.text = this.editValue;
+			}
+			
+			private function onValueFocusOut():void
+			{
+				if(this.valueText.text == this.editValue)
+					this.valueText.text = this.emptyValue;
+			}
+			
+			private function onClick():void
+			{	
+				var event:FlexEvent = new FlexEvent(FlexEvent.VALUE_COMMIT);
+				this.dispatchEvent(event);
+			}
+			
+			
+		]]>
+	</fx:Script>
+	<s:Button id="btn" width="100%" minWidth="{this.minWidth}" click="onClick()"/>
+	<s:HGroup gap="1" horizontalCenter="0" verticalCenter="0" mouseEnabled="false">
+		<s:RichText text="{this.prefix}" mouseChildren="false" mouseEnabled="false"/>
+		<s:RichEditableText id="valueText" text="{this.emptyValue}" 
+				focusIn="onValueFocusIn()" focusOut="onValueFocusOut()" enter="onValueEnterKey()"
+				multiline="false" />
+		<s:RichText text="{this.suffix}" mouseChildren="false" mouseEnabled="false"/>
+	</s:HGroup>
+</s:Group>

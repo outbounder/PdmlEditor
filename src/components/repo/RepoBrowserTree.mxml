@@ -1,40 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
-		 xmlns:mx="library://ns.adobe.com/flex/halo">
+		 xmlns:mx="library://ns.adobe.com/flex/halo" 
+		 xmlns:components="components.*" xmlns:repo="components.repo.*">
 	
 	<fx:Script>
 		<![CDATA[
+			import components.repo.renderers.RepoTreeItemRenderer;
+			
+			import data.model.PdmlFile;
+			
+			import mx.events.DragEvent;
+			
 			[Bindable]
 			public var rootFolder:File;
+			
+			private function get treeItemRenderer():ClassFactory
+			{
+				var result:ClassFactory = new ClassFactory(RepoTreeItemRenderer);
+				result.properties = {ownerBrowser: this};
+				return result;
+			}
+			
+			private function onFileSystemTreeRightClick():void
+			{
+				if(this.fileSystemTree.selectedIndex == -1)
+					return;
+				
+				this.currentState = 'currentOptions';
+			}
+			
+			private function onComplete():void
+			{
+				this.currentState = 'currentView';
+				this.fileSystemTree.refresh();
+			}
+			
 		]]>
 	</fx:Script>
 	
 	<s:states>
 		<s:State name="currentView" />
 		<s:State name="currentOptions" />
+		<s:State name="pdmlFileTreeOptions" />
 	</s:states>
 	
-	<mx:FileSystemTree id="fileSystemTree" width="100%" height="100%" 
+	<mx:FileSystemTree 
+		   id="fileSystemTree" width="100%" height="100%" 
 		   directory="{this.rootFolder}"
 		   dragEnabled="true"
 		   includeIn="currentView"
-		   rightClick="{this.currentState = 'currentOptions'}"/>
+		   rightClick="onFileSystemTreeRightClick()"
+		   itemRenderer="{this.treeItemRenderer}"/>
 	
-	<s:VGroup horizontalAlign="center" width="100%" verticalCenter="0" includeIn="currentOptions">
-		<s:Group>
-			<s:Button width="200" />
-			<s:HGroup gap="1" horizontalCenter="0" verticalCenter="0" mouseEnabled="false">
-				<s:RichText text="create" mouseChildren="false" mouseEnabled="false"/>
-				<s:RichEditableText text="..." />
-				<s:RichText text="pdml here" mouseChildren="false" mouseEnabled="false"/>
-			</s:HGroup>
-		</s:Group>
+	<repo:PdmlFileTreeOptions id="pdmlFileTreeOptionsView" 
+		rootFolder="{this.fileSystemTree.selectedPath}"
+		includeIn="pdmlFileTreeOptions"
+		horizontalAlign="center" width="100%" verticalCenter="0"
+		complete="onComplete()" />
 	
-		<s:Button label="create ... pdml here" width="200"  />
-		<s:Button label="save as ...pdml here" width="200" />
-		<s:Button label="create class path .... here" width="200" />
-		<s:Button label="NONE OF THESE" width="200" click="{this.currentState = 'currentView'}"/>
-	</s:VGroup>
+	<repo:FileTreeOptions id="fileTreeOptionsView"
+		includeIn="currentOptions"
+		horizontalAlign="center" width="100%" verticalCenter="0"
+		complete="onComplete()"/>
 	
 </s:Group>

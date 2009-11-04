@@ -11,5 +11,10 @@ package data.model
 			this.argName = argXML.name();
 			this.argValue = argXML.text();
 		}
+		
+		public function asXMLString():String
+		{
+			return "<"+this.argName+">"+this.argValue+"</"+this.argName+">";
+		}
 	}
 }

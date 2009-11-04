@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
 		 xmlns:mx="library://ns.adobe.com/flex/halo"
 		 dragEnter="onDragEnter(event)"
@@ -28,24 +28,14 @@
 			import spark.events.RendererExistenceEvent;
 			
 			[Bindable]
-			private var pdmlFile:PdmlFile;
+			public var pdmlFile:PdmlFile;
 			
 			private var overRendererOnDrag:IVisualElement;
 			private var currentSelectedPdmlNode:ItemRenderer;
 			
-			protected function onDragEnter(event:DragEvent):void
+			private function onDragEnter(event:DragEvent):void
 			{
 				this.overRendererOnDrag  = null;
-				if(event.dragSource.hasFormat("treeItems"))
-				{
-					var treeItems:Array = event.dragSource.dataForFormat("treeItems") as Array;
-					if(treeItems.length == 1)
-					{
-						var item:File = treeItems[0] as File;
-						if(item.extension == "pdml")
-							DragManager.acceptDragDrop(event.currentTarget as UIComponent);
-					}
-				}
 				if(event.dragSource.hasFormat("pdmlNode") ||
 					event.dragSource.hasFormat("module") || 
 					event.dragSource.hasFormat("moduleMethod"))
@@ -56,23 +46,13 @@
 				}
 			}
 			
-			protected function onDragOver(event:DragEvent):void
+			private function onDragOver(event:DragEvent):void
 			{
 				this.overRendererOnDrag = null;
 			}
 			
 			protected function onDragDrop(event:DragEvent):void
 			{
-				if(event.dragSource.hasFormat("treeItems"))
-				{
-					var file:File = event.dragSource.dataForFormat("treeItems")[0] as File;
-					var stream:FileStream = new FileStream();
-					stream.open(file, FileMode.READ);
-					var contents:String = stream.readUTFBytes(stream.bytesAvailable);
-					var xml:XML = new XML(contents);
-					
-					this.pdmlFile = new PdmlFile(xml);
-				}
 				if(event.dragSource.hasFormat("module"))
 				{
 					var moduleInfo:MultiModuleInfo = event.dragSource.dataForFormat("module") as MultiModuleInfo;
@@ -123,7 +103,7 @@
 				else
 					return new ClassFactory(NodeRenderer);
 			}
-
+			
 			protected function onRendererAdd(event:RendererExistenceEvent):void
 			{
 				event.renderer.addEventListener(DragEvent.DRAG_OVER, onRendererDragOver);
@@ -161,7 +141,12 @@
 		]]>
 	</fx:Script>
 	
-	<s:RichText text="PDML PARSER CLASS PATH" height="20" textAlign="center" verticalAlign="middle" width="100%" />
+	<s:Rect width="100%" height="100%" alpha="0.5">
+		<s:fill>
+			<s:SolidColor color="gray"/>
+		</s:fill>
+	</s:Rect>
+	
 	<s:DataGroup 
 			id="pdmlNodesView" width="100%" height="100%" 
 			itemRendererFunction="{this.getAsPdmlNodeView}"
@@ -174,4 +159,4 @@
 	</s:DataGroup>
 		
 	
-</s:VGroup>
+</s:Group>

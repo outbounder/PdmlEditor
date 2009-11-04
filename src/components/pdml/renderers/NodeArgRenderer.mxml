@@ -45,10 +45,7 @@
 					var treeItems:Array = e.dragSource.dataForFormat("treeItems") as Array;
 					var file:File = treeItems[0] as File;
 					var context:RuntimeContext = new RuntimeContext();
-					if(this.nodeArg.argValue.length == 0)
-						this.nodeArg.argValue = RestService.getClassPath(context.rootFolder, file.nativePath);
-					else
-						this.nodeArg.argValue += RestService.getClassPath(context.rootFolder, file.nativePath);
+					this.nodeArg.argValue = RestService.getClassPath(context.rootFolder, file.nativePath);
 				}
 			}
 		]]>

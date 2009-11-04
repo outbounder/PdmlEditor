@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/halo" 
+		 xmlns:components="components.*">
+	
+	<fx:Metadata>
+		[Event(name='complete', type='flash.events.Event')]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			import data.model.PdmlFile;
+			
+			import flash.events.DataEvent;
+			import flash.events.Event;
+			
+			import haxe.org.dassista.api.rest.as3.RestService;
+			
+			import mx.events.FlexEvent;
+			
+			private var _pdmlFile:PdmlFile;
+			
+			[Bindable]
+			public var rootFolder:String;
+			
+			[Bindable]
+			public function set pdmlFile(value:PdmlFile):void
+			{
+				this._pdmlFile = value;
+				if(value.nativeFile != null)
+					this.saveAsBtn.value = value.nativeFile.name;
+				else
+					this.saveAsBtn.value = null;
+			}
+			
+			public function get pdmlFile():PdmlFile
+			{
+				return this._pdmlFile;
+			}
+			
+			private function onSavePdml():void
+			{		
+				var restService:RestService = new RestService();
+				restService.setValue("module", "haxe.org.dassista.tools.proxy.File");
+				restService.setValue("method", "createFile");
+				restService.setValue("root", this.rootFolder);
+				restService.setValue("name", this.saveAsBtn.value);
+				restService.setValue("content",this.pdmlFile.asXMLString());
+				restService.load(dispatchComplete);
+			}
+			
+			private function dispatchComplete(e:DataEvent = null):void
+			{
+				var event:Event = new Event(Event.COMPLETE);
+				this.dispatchEvent(event);
+			}
+		]]>
+	</fx:Script>
+	
+	<s:RichText text="{this.rootFolder}" width="100%" maxDisplayedLines="1" textAlign="center"/>
+	<components:EditableButton  id="saveAsBtn"
+								prefix="save as " emptyValue="..." suffix="here" minWidth="200" 
+								valueCommit="onSavePdml()" />
+	<s:Button label="cancel" width="200" click="dispatchComplete()"/>
+</s:VGroup>

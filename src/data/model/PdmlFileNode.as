@@ -18,5 +18,18 @@ package data.model
 				this.args.addItem(new PdmlFileNodeArg(arg));
 			}
 		}
+		
+		public function asXMLString():String
+		{
+			var result:StringBuf = new StringBuf();
+			result.add("<"+this.method);
+			if(this.classname != "")
+				result.add(" classname='"+this.classname+"'");
+			result.add(">");
+			for each(var arg:PdmlFileNodeArg in this.args)
+				result.add(arg.asXMLString());
+			result.add("</"+this.method+">");
+			return result.toString();
+		}
 	}
 }
