@@ -5,10 +5,12 @@
 	xmlns:mx="library://ns.adobe.com/flex/halo"
 	xmlns:pdml="components.pdml.*" 
 	xmlns:modules="components.modules.*"
+	xmlns:repo="components.repo.*"
+	xmlns:websector="http://websector.de"
 	width="800" height="600"
 	currentState="loading"
 	preinitialize="onPreinitialize()"
-	creationComplete="onCreationComplete()" xmlns:repo="components.repo.*">
+	creationComplete="onCreationComplete()">
 	
 	<fx:Script>
 		<![CDATA[
@@ -18,14 +20,12 @@
 			import flash.Boot;
 			import flash.display.MovieClip;
 			import flash.events.DataEvent;
-			import flash.events.MouseEvent;
 			
 			import haxe.org.dassista.api.rest.as3.IRestServiceContext;
 			import haxe.org.dassista.api.rest.as3.RestService;
 			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
-			import mx.controls.FileSystemTree;
 			
 			[Bindable]
 			private var modulesList:ArrayCollection;
@@ -35,6 +35,9 @@
 			
 			[Bindable]
 			private var restService:RestService;
+			
+			[Bindable]
+			private var updateFile:File;
 			
 			private function onPreinitialize():void
 			{
@@ -53,8 +56,11 @@
 				
 				// load module result
 				this.restService.loadModuleResult(repoInfoContext, onGetRootFolderRealPathResult);
+				
+				this.updateFile = File.applicationDirectory.resolvePath('./assets/updater.xml');
+				this.nativeWindow.title = "PdmlEditor - "+this.appUpdater.getApplicationVersion();
 			}
-			
+					
 			private function onGetRootFolderRealPathResult(e:DataEvent):void
 			{
 				var rootFolderXML:XML = XML(e.data);
@@ -101,7 +107,7 @@
 		<s:Button label="try starting DAssistA rest service" click="{Alert.show('not implemented')}"/>
 	</s:VGroup>
 	
-	
+		
 	<mx:HDividedBox width="100%" height="100%" includeIn="intialized">
 		<mx:VDividedBox width="50%" height="100%">
 			<repo:RepoBrowserTree width="100%" height="100%" rootFolder="{this.rootFolder}" />
@@ -109,5 +115,15 @@
 		</mx:VDividedBox>
 		<pdml:PdmlScript width="50%" height="100%" />
 	</mx:HDividedBox>
+	
+	<websector:ApplicationUpdaterUI
+			id="appUpdater"
+			horizontalCenter="0"
+			verticalCenter="0"
+			invisibleCheck="true"
+			useWindow="false"
+			skinClass="de.websector.utils.updater.ui.skins.silver.AppUpdaterUISilverSkin"
+			configurationFile="{this.updateFile}"/>
+			
 	
 </s:WindowedApplication>
