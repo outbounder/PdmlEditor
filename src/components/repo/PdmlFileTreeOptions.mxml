@@ -28,10 +28,7 @@
 			public function set pdmlFile(value:PdmlFile):void
 			{
 				this._pdmlFile = value;
-				if(value.nativeFile != null)
-					this.saveAsBtn.value = value.nativeFile.name;
-				else
-					this.saveAsBtn.value = null;
+				this.saveAsBtn.value = value.name;
 			}
 			
 			public function get pdmlFile():PdmlFile
@@ -58,9 +55,9 @@
 		]]>
 	</fx:Script>
 	
-	<s:RichText text="{this.rootFolder}" width="100%" maxDisplayedLines="1" textAlign="center"/>
 	<components:EditableButton  id="saveAsBtn"
 								prefix="save as " emptyValue="..." suffix="here" minWidth="200" 
 								valueCommit="onSavePdml()" />
+	<s:RichText text="{this.rootFolder}" width="100%" maxDisplayedLines="1" textAlign="center"/>
 	<s:Button label="cancel" width="200" click="dispatchComplete()"/>
 </s:VGroup>

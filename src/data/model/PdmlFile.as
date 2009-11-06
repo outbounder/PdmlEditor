@@ -7,8 +7,7 @@ package data.model
 	[Bindable]
 	public class PdmlFile
 	{
-		public var nativeFile:File;
-		
+		public var name:String = null;
 		public var rootTagName:String = "pdml";
 		public var parser:String = "haxe.org.dassista.tools.parsers.ActionPdml";
 		public var classname:String = "";

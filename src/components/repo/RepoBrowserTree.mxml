@@ -8,10 +8,6 @@
 		<![CDATA[
 			import components.repo.renderers.RepoTreeItemRenderer;
 			
-			import data.model.PdmlFile;
-			
-			import mx.events.DragEvent;
-			
 			[Bindable]
 			public var rootFolder:File;
 			
@@ -60,7 +56,7 @@
 		complete="onComplete()" />
 	
 	<repo:FileTreeOptions id="fileTreeOptionsView"
-		rootFolder="{this.fileSystemTree.selectedPath}"
+		rootFolder="{this.fileSystemTree.selectedItem}"
 		includeIn="currentOptions"
 		horizontalAlign="center" width="100%" verticalCenter="0"
 		complete="onComplete()"/>

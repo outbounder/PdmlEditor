@@ -15,6 +15,8 @@
 			import data.model.PdmlFileNode;
 			import data.model.PdmlFileNodeArg;
 			
+			import flash.events.Event;
+			
 			import mx.core.IVisualElement;
 			import mx.core.UIComponent;
 			import mx.events.DragEvent;
@@ -76,6 +78,7 @@
 				event.renderer.addEventListener(DragEvent.DRAG_OVER, onRendererDragOver);
 				event.renderer.addEventListener(DragEvent.DRAG_EXIT, onRendererDragExit);
 				event.renderer.addEventListener(MouseEvent.CLICK, onRendererClick);
+				event.renderer.addEventListener(Event.CLEAR, onRendererClear);
 			}
 			
 			protected function onRendererRemove(event:RendererExistenceEvent):void
@@ -83,6 +86,7 @@
 				event.renderer.removeEventListener(DragEvent.DRAG_OVER, onRendererDragOver);
 				event.renderer.removeEventListener(DragEvent.DRAG_EXIT, onRendererDragExit);
 				event.renderer.removeEventListener(MouseEvent.CLICK, onRendererClick);
+				event.renderer.removeEventListener(Event.CLEAR, onRendererClear);
 			}
 			
 			private function onRendererClick(e:MouseEvent):void
@@ -103,6 +107,11 @@
 			private function onRendererDragExit(e:DragEvent):void
 			{
 				(e.target as UIComponent).currentState = "normal";
+			}
+			
+			private function onRendererClear(e:Event):void
+			{
+				this.pdmlFile.nodes.removeItemAt(this.pdmlNodesView.getElementIndex(e.target as UIComponent));
 			}
 
 		]]>

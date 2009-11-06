@@ -25,6 +25,8 @@
 			
 			[Bindable]
 			private var pdmlFile:PdmlFile;
+			[Bindable]
+			private var pdmlFileName:String;
 			
 			private function onRightClick():void
 			{
@@ -68,7 +70,7 @@
 					var xml:XML = new XML(contents);
 					
 					this.pdmlFile = new PdmlFile(xml);
-					this.pdmlFile.nativeFile = file;
+					this.pdmlFile.name = file.name;
 				}
 				
 				if(event.dragSource.hasFormat("module"))

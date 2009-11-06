@@ -14,10 +14,22 @@
 			
 			import haxe.org.dassista.api.rest.as3.RestService;
 			
-			import mx.events.FlexEvent;
+			
+			private var _rootFolder:File;
 			
 			[Bindable]
-			public var rootFolder:String;
+			public function set rootFolder(value:File):void
+			{
+				if(value.isDirectory)
+					this._rootFolder = value; 
+				else
+					this._rootFolder = value.parent;
+			}
+			
+			public function get rootFolder():File
+			{
+				return this._rootFolder;
+			}
 			
 			private function onCreateClassPath():void
 			{			
@@ -25,7 +37,7 @@
 				var restService:RestService = new RestService();
 				restService.setValue("module", "haxe.org.dassista.tools.proxy.Dir");
 				restService.setValue("method", "create");
-				restService.setValue("target", this.rootFolder+"\\"+value.split(".").join("\\"));
+				restService.setValue("target", this.rootFolder.nativePath+"\\"+value.split(".").join("\\"));
 				restService.load(dispatchComplete);
 			}
 			
@@ -37,10 +49,10 @@
 		]]>
 	</fx:Script>
 	
-	<s:RichText text="{this.rootFolder}" width="100%" maxDisplayedLines="1" textAlign="center"/>
 	<components:EditableButton id="classPathBtn" 
 		prefix="create class path" emptyValue="..." suffix="here" minWidth="200"
 		valueCommit="onCreateClassPath()"/>
+	<s:RichText text="{this.rootFolder.nativePath}" width="100%" maxDisplayedLines="1" textAlign="center"/>
 	<s:Button label="cancel" width="200" click="dispatchComplete()"/>
 	
 </s:VGroup>

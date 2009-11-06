@@ -17,7 +17,7 @@
 			import mx.events.DragEvent;
 			import mx.managers.DragManager;
 			
-			public var ownerBrowser:RepoBrowserTree;
+			public var ownerBrowser:RepoBrowserTree; // this shouldn't be here... 
 			
 			private function onCreationComplete():void
 			{
@@ -27,18 +27,29 @@
 			private function onDragEnter(e:DragEvent):void
 			{
 				var file:File = this.data as File;
-				if(e.dragSource.hasFormat("pdmlFile") && file.isDirectory)
+				if(e.dragSource.hasFormat("pdmlFile"))
 					DragManager.acceptDragDrop(this);
 			}
 			
 			private function onDragDrop(event:DragEvent):void
 			{
 				this.dragHighlight.visible = false;
-				this.ownerBrowser.currentState = 'pdmlFileTreeOptions';
+				this.ownerBrowser.currentState = 'pdmlFileTreeOptions'; // init pdmlFileTreeOptionsView
 				
+				var target:File = new File(((event.target as RepoTreeItemRenderer).data as File).nativePath);
 				var pdmlFile:PdmlFile = event.dragSource.dataForFormat('pdmlFile') as PdmlFile;
-				this.ownerBrowser.pdmlFileTreeOptionsView.rootFolder = ((event.target as RepoTreeItemRenderer).data as File).nativePath;
-				this.ownerBrowser.pdmlFileTreeOptionsView.pdmlFile = pdmlFile;
+				if(target.isDirectory)
+				{
+					this.ownerBrowser.pdmlFileTreeOptionsView.rootFolder = target.nativePath; // directory itself
+					this.ownerBrowser.pdmlFileTreeOptionsView.pdmlFile = pdmlFile;
+				}
+				else
+				{
+					if(pdmlFile.name == null)
+						pdmlFile.name = target.name;
+					this.ownerBrowser.pdmlFileTreeOptionsView.rootFolder = target.parent.nativePath; // file's directory 
+					this.ownerBrowser.pdmlFileTreeOptionsView.pdmlFile = pdmlFile;
+				}
 			}
 			
 			private function onDragOver():void

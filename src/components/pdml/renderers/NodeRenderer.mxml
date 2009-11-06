@@ -5,20 +5,22 @@
 	width="100%"
 	mouseDown="onMouseDown(event)"
 	dragEnter="onDragEnter(event)"
-	dragDrop="onDragDrop(event)">
+	dragDrop="onDragDrop(event)" xmlns:pdml="components.pdml.*">
 
 	<fx:Script>
 		<![CDATA[
 			import data.model.MultiModuleMethodArgInfo;
 			import data.model.PdmlFileNode;
-			import data.model.PdmlFileNodeArg;
 			
+			import flash.events.Event;
 			import flash.events.MouseEvent;
 			
 			import mx.core.DragSource;
 			import mx.core.UIComponent;
 			import mx.events.DragEvent;
 			import mx.managers.DragManager;
+			
+			import spark.components.DataGroup;
 			
 			[Bindable]
 			private var pdmlNode:PdmlFileNode;
@@ -58,6 +60,12 @@
 					DragManager.doDrag(this, dragSource, e);
 				}
 			}
+			
+			private function onDelete():void
+			{
+				var event:Event = new Event(Event.CLEAR);
+				this.dispatchEvent(event);
+			}
 		]]>
 	</fx:Script>
 
@@ -92,4 +100,5 @@
 					mouseEnabled="false" mouseChildren="false"/>	
 	</s:VGroup>
 	
+	<s:Button label="delete" includeIn="hovered" right="0" verticalCenter="0" click="onDelete()" />
 </s:ItemRenderer>
