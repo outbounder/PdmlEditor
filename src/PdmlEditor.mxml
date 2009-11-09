@@ -103,7 +103,7 @@
 	</s:states>
 	
 	<s:VGroup horizontalCenter="0" verticalCenter="0" includeIn="resterror">
-		<s:RichText text="Can not access http://localhost:2000, please ensure DAssistA rest service is running"/>
+		<s:RichText text="Can not access http://pdrepo.dev, please ensure DAssistA rest service is running"/>
 		<s:Button label="try starting DAssistA rest service" click="{Alert.show('not implemented')}"/>
 	</s:VGroup>
 	
