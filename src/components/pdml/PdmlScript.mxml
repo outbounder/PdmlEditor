@@ -72,17 +72,17 @@
 					this.pdmlFile = new PdmlFile(xml);
 					this.pdmlFile.name = file.name;
 				}
-				
+				var newNode:PdmlFileNode;
 				if(event.dragSource.hasFormat("module"))
 				{
 					var moduleInfo:MultiModuleInfo = event.dragSource.dataForFormat("module") as MultiModuleInfo;
-					var newNode:PdmlFileNode = moduleInfo.asPdmlFileNode();
+					newNode = moduleInfo.asPdmlFileNode();
 					this.pdmlFile.nodes.addItem(newNode);
 				}
 				if(event.dragSource.hasFormat("moduleMethod"))
 				{
 					var methodInfo:MultiModuleMethodInfo = event.dragSource.dataForFormat("moduleMethod") as MultiModuleMethodInfo;
-					var newNode:PdmlFileNode = methodInfo.asPdmlFileNode();
+					newNode = methodInfo.asPdmlFileNode();
 					this.pdmlFile.nodes.addItem(newNode);
 				}
 			}

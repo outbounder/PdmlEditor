@@ -1,0 +1,5 @@
+<pdml parser="haxe.org.dassista.tools.parsers.MetadataPdml">
+    <author>Boris Filipov</author>
+    <version>0.1</version>
+    <releasehost>dassista.wizartworx.com</releasehost>
+</pdml>
