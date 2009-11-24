@@ -12,7 +12,7 @@
 		<![CDATA[
 			import flash.events.Event;
 			
-			import haxe.org.dassista.api.rest.as3.RestService;
+			import org.dassista.api.rest.as3.RestService;
 			
 			
 			private var _rootFolder:File;
@@ -35,8 +35,8 @@
 			{			
 				var value:String = this.classPathBtn.value;
 				var restService:RestService = new RestService();
-				restService.setValue("module", "haxe.org.dassista.tools.proxy.Dir");
-				restService.setValue("method", "create");
+				restService.setValue("moduleName", "org.dassista.modules.proxy.Dir");
+				restService.setValue("methodName", "create");
 				restService.setValue("target", this.rootFolder.nativePath+"\\"+value.split(".").join("\\"));
 				restService.load(dispatchComplete);
 			}

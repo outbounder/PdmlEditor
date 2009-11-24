@@ -15,9 +15,7 @@
 			import flash.events.DataEvent;
 			import flash.events.Event;
 			
-			import haxe.org.dassista.api.rest.as3.RestService;
-			
-			import mx.events.FlexEvent;
+			import org.dassista.api.rest.as3.RestService;
 			
 			private var _pdmlFile:PdmlFile;
 			
@@ -39,8 +37,8 @@
 			private function onSavePdml():void
 			{		
 				var restService:RestService = new RestService();
-				restService.setValue("module", "haxe.org.dassista.tools.proxy.File");
-				restService.setValue("method", "createFile");
+				restService.setValue("moduleName", "org.dassista.modules.proxy.File");
+				restService.setValue("methodName", "createFile");
 				restService.setValue("root", this.rootFolder);
 				restService.setValue("name", this.saveAsBtn.value);
 				restService.setValue("content",this.pdmlFile.asXMLString());

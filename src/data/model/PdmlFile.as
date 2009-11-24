@@ -9,7 +9,7 @@ package data.model
 	{
 		public var name:String = null;
 		public var rootTagName:String = "pdml";
-		public var parser:String = "haxe.org.dassista.tools.parsers.ActionPdml";
+		public var parser:String = "org.dassista.modules.parsers.ActionPdml";
 		public var classname:String = "";
 		public var nodes:ArrayCollection = new ArrayCollection();
 		

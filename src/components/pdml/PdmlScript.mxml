@@ -7,7 +7,8 @@
 		 currentState="scriptView"
 		 rightClick="onRightClick()"
 		 dragEnter="onDragEnter(event)"
-		 dragDrop="onDragDrop(event)">
+		 dragDrop="onDragDrop(event)"
+		 mouseDown="onMouseDownHeader(event)">
 	
 	<fx:Script>
 		<![CDATA[
@@ -89,11 +90,11 @@
 			
 			private function onMouseDownHeader(e:MouseEvent):void
 			{
-				if(e.target == this.header)
+				if(e.target == this)
 				{
 					var dragSource:DragSource = new DragSource();
 					dragSource.addData(this.pdmlFile, "pdmlFile");
-					DragManager.doDrag(this.header, dragSource, e);
+					DragManager.doDrag(this, dragSource, e);
 				}
 			}
 		]]>
@@ -109,27 +110,10 @@
 			<s:SolidColor color="gray"/>
 		</s:fill>
 	</s:Rect>
-	
-	<s:VGroup width="100%" height="100%" >
-		
-		<mx:Spacer height="5" />
-		
-		<s:HGroup id="header" width="100%" gap="1" mouseDown="onMouseDownHeader(event)" mouseChildren="false">
-			<s:RichText text="&lt;{this.pdmlFile.rootTagName}" />
-			<s:RichText text="classname=&quot;{this.pdmlFile.classname}&quot;" />
-			<s:RichText text="parser=&quot;{this.pdmlFile.parser}&quot;" />
-			<s:RichText text="&gt;" />
-		</s:HGroup>
-				
-		<s:Group width="100%">
-			<pdml:PdmlScriptEditor id="editorView" left="20" right="0" 
-					   pdmlFile="@{this.pdmlFile}"
-					   includeIn="scriptView"
-					   minHeight="20"/>
-		</s:Group>
-		
-		<s:RichText text="&lt;/{this.pdmlFile.rootTagName}&gt;" width="100%"/>
-	</s:VGroup>
+
+	<pdml:PdmlScriptEditor id="editorView" width="100%" 
+			   pdmlFile="@{this.pdmlFile}"
+			   includeIn="scriptView"/>
 	
 	<s:VGroup horizontalAlign="center" verticalCenter="0" width="100%" includeIn="optionsView">
 		<s:Button label="create empty pdml" width="200" click="onNewEmptyPdml()"/>

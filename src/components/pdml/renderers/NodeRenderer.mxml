@@ -11,6 +11,7 @@
 		<![CDATA[
 			import data.model.MultiModuleMethodArgInfo;
 			import data.model.PdmlFileNode;
+			import data.model.PdmlFileNodeArg;
 			
 			import flash.events.Event;
 			import flash.events.MouseEvent;
@@ -21,6 +22,7 @@
 			import mx.managers.DragManager;
 			
 			import spark.components.DataGroup;
+			import spark.events.RendererExistenceEvent;
 			
 			[Bindable]
 			private var pdmlNode:PdmlFileNode;
@@ -66,6 +68,22 @@
 				var event:Event = new Event(Event.CLEAR);
 				this.dispatchEvent(event);
 			}
+			
+			private function onRendererAdd(event:RendererExistenceEvent):void
+			{
+				event.renderer.addEventListener(Event.CLEAR, onRendererSelfClear);
+			}
+			
+			private function onRendererRemove(event:RendererExistenceEvent):void
+			{
+				event.renderer.removeEventListener(Event.CLEAR, onRendererSelfClear);
+			}
+			
+			private function onRendererSelfClear(e:Event):void
+			{
+				var arg:PdmlFileNodeArg = (e.target as NodeArgRenderer).data as PdmlFileNodeArg;
+				this.pdmlNode.args.removeItemAt(this.pdmlNode.args.getItemIndex(arg));
+			}
 		]]>
 	</fx:Script>
 
@@ -86,18 +104,26 @@
 	</s:Rect>
 	
 	<s:VGroup width="100%" mouseEnabled="false">
-		<s:RichText text="&lt;{this.pdmlNode.method} classname=&quot;{this.pdmlNode.classname}&quot;&gt;" 
-					width="100%" height="15" verticalAlign="middle"
-					mouseEnabled="false" mouseChildren="false"/>
+		<s:HGroup verticalAlign="middle" gap="1">
+			<s:RichText text="&lt;" mouseEnabled="false" mouseChildren="false"/>
+			<s:RichEditableText id="methodNameValue" text="@{this.pdmlNode.method}" minWidth="20"/>
+			<s:RichText text="classname=&quot;" mouseEnabled="false" mouseChildren="false"/>
+			<s:RichEditableText id="classNameValue" text="@{this.pdmlNode.classname}" minWidth="20"/>
+			<s:RichText text="&quot;&gt;"  mouseEnabled="false" mouseChildren="false"/>
+		</s:HGroup>
 		<s:Group width="100%">
 			<s:DataGroup left="20" width="100%" dataProvider="{this.pdmlNode.args}"
-						 itemRenderer="{new ClassFactory(NodeArgRenderer)}">
+						 itemRenderer="{new ClassFactory(NodeArgRenderer)}"
+						 rendererAdd="onRendererAdd(event)"
+						 rendererRemove="onRendererRemove(event)">
 				<s:layout><s:VerticalLayout gap="2" /></s:layout>
 			</s:DataGroup>
 		</s:Group>
-		<s:RichText text="&lt;/{this.pdmlNode.method}&gt;" 
-					width="100%" height="15" verticalAlign="middle"
-					mouseEnabled="false" mouseChildren="false"/>	
+		<s:HGroup verticalAlign="middle" gap="1">
+			<s:RichText text="&lt;/" mouseEnabled="false" mouseChildren="false"/>
+			<s:RichEditableText id="methodNameValueEnd" text="@{this.pdmlNode.method}" minWidth="20"/>
+			<s:RichText text="&gt;"  mouseEnabled="false" mouseChildren="false"/>
+		</s:HGroup>
 	</s:VGroup>
 	
 	<s:Button label="delete" includeIn="hovered" right="0" verticalCenter="0" click="onDelete()" />

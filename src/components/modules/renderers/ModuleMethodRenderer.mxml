@@ -10,12 +10,12 @@
 			import data.model.MultiModuleMethodArgInfo;
 			import data.model.MultiModuleMethodInfo;
 			
-			import haxe.org.dassista.api.rest.as3.RestService;
-			
 			import mx.collections.ArrayCollection;
 			import mx.core.DragSource;
 			import mx.core.UIComponent;
 			import mx.managers.DragManager;
+			
+			import org.dassista.api.rest.as3.RestService;
 			
 			[Bindable]
 			private var methodInfo:MultiModuleMethodInfo;
@@ -31,7 +31,8 @@
 				if(this.methodInfo.methodArgs == null)
 				{
 					var service:RestService = new RestService();
-					service.setValue("module", "haxe.org.dassista.tools.ModuleInfo");
+					service.setValue("moduleName", "org.dassista.modules.ModuleInfo");
+					service.setValue("methodName", "execute");
 					service.setValue("target", this.methodInfo.moduleClassname);
 					service.setValue("m", this.methodInfo.methodName);
 					service.load(onModuleMethodsInfo);

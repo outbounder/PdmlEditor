@@ -13,11 +13,16 @@
 			import data.RuntimeContext;
 			import data.model.PdmlFileNodeArg;
 			
-			import haxe.org.dassista.api.rest.as3.RestService;
+			import flash.events.Event;
+			import flash.events.MouseEvent;
 			
 			import mx.core.UIComponent;
 			import mx.events.DragEvent;
 			import mx.managers.DragManager;
+			
+			import org.dassista.api.rest.as3.RestService;
+			
+			import skins.NodeArgDeleteBtnSkin;
 			
 			[Bindable]
 			private var nodeArg:PdmlFileNodeArg;
@@ -66,6 +71,13 @@
 				else
 					this.currentState = 'selected';
 			}
+
+			protected function deleteArgBtn_clickHandler(event:MouseEvent):void
+			{
+				var e:Event = new Event(Event.CLEAR);
+				this.dispatchEvent(e);
+			}
+
 		]]>
 	</fx:Script>
 	
@@ -85,10 +97,11 @@
 		</s:fill>
 	</s:Rect>
 	
-	<s:HGroup verticalAlign="middle">
+	<s:HGroup verticalAlign="middle" width="100%">
 		<s:RichText text="&lt;{this.nodeArg.argName}&gt;" color.hovered="gray"  />
 		<s:RichEditableText id="argValueView" text="@{this.nodeArg.argValue}" color.hovered="gray" />
 		<s:RichText text="&lt;/{this.nodeArg.argName}&gt;" color.hovered="gray" />
+		<s:Button id="deleteArgBtn" skinClass="{NodeArgDeleteBtnSkin}" includeIn="hovered,selected" click="deleteArgBtn_clickHandler(event)"/>
 	</s:HGroup>
 	
 </s:ItemRenderer>

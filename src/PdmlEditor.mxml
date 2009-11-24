@@ -21,11 +21,11 @@
 			import flash.display.MovieClip;
 			import flash.events.DataEvent;
 			
-			import haxe.org.dassista.api.rest.as3.IRestServiceContext;
-			import haxe.org.dassista.api.rest.as3.RestService;
-			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
+			
+			import org.dassista.api.rest.as3.IRestServiceContext;
+			import org.dassista.api.rest.as3.RestService;
 			
 			[Bindable]
 			private var modulesList:ArrayCollection;
@@ -34,7 +34,7 @@
 			private var rootFolder:File;
 			
 			[Bindable]
-			private var restService:RestService;
+			private var restService:org.dassista.api.rest.as3.RestService;
 			
 			[Bindable]
 			private var updateFile:File;
@@ -51,8 +51,8 @@
 				
 				// prepare repoInfoContext
 				var repoInfoContext:IRestServiceContext = this.restService.clone();
-				repoInfoContext.setValue("module", "haxe.org.dassista.tools.RepoInfo");
-				repoInfoContext.setValue("method", "getRootFolderRealPath");
+				repoInfoContext.setValue("moduleName", "org.dassista.modules.RepoInfo");
+				repoInfoContext.setValue("methodName", "getRootFolderRealPath");
 				
 				// load module result
 				this.restService.loadModuleResult(repoInfoContext, onGetRootFolderRealPathResult);
@@ -76,8 +76,9 @@
 				
 				// module info
 				var moduleInfoContext:IRestServiceContext = this.restService.clone();
-				moduleInfoContext.setValue("module", "haxe.org.dassista.tools.ModuleInfo");
-				moduleInfoContext.setValue("target", "haxe.org.dassista.tools");
+				moduleInfoContext.setValue("moduleName", "org.dassista.modules.ModuleInfo");
+				moduleInfoContext.setValue("methodName", "execute");
+				moduleInfoContext.setValue("target", "_app.org.dassista.modules");
 				
 				this.restService.loadModuleResult(moduleInfoContext, onModuleInfoResult);
 			}
